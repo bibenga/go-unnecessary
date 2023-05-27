@@ -1,10 +1,7 @@
 package unnecessary
 
 import (
-	"bytes"
-	"encoding/gob"
 	"fmt"
-	"log"
 
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
@@ -115,27 +112,4 @@ func RenderPage(page *Component) (string, error) {
 func RenderComponent(component *Component) (string, error) {
 	render2(component)
 	return MarshalNode(component.node)
-}
-
-func Serialization() {
-	gob.Register(Component{})
-	gob.Register(&html.Node{})
-
-	page, err := NewWicketPage("html/page2.html")
-	if err != nil {
-		panic(err)
-	}
-
-	var network bytes.Buffer        // Stand-in for a network connection
-	enc := gob.NewEncoder(&network) // Will write to network.
-	dec := gob.NewDecoder(&network) // Will read from network.
-	if err := enc.Encode(page); err != nil {
-		log.Fatal("encode error:", err)
-	}
-	log.Printf("encoded: %v", network.String())
-	// Decode (receive) and print the values.
-	var page2 Component
-	if err = dec.Decode(&page2); err != nil {
-		log.Fatal("decode error 1:", err)
-	}
 }

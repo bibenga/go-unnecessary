@@ -2,38 +2,10 @@ package unnecessary
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 )
 
-// type Model interface{}
-
-// type DynamicModel func() Model
-
-// func GetModelAsText(model Model) string {
-// 	// var value Model
-// 	// log.Printf("getModelAsText - %t", model)
-// 	switch v := model.(type) {
-// 	// case Model2:
-// 	// 	log.Printf("Model2!!")
-// 	// 	return GetModelAsText(v.String())
-// 	// case DynamicModel:
-// 	// 	// log.Printf("DynamicModel")
-// 	// 	return GetModelAsText(v())
-// 	case func() interface{}:
-// 		// log.Printf("func() interface {}")
-// 		return GetModelAsText(v())
-// 	case string:
-// 		// log.Printf("string")
-// 		return v
-// 	default:
-// 		// log.Printf("other")
-// 		return fmt.Sprintf("%v", v)
-// 	}
-// }
-
 func ValueToString(value interface{}) string {
-	// log.Printf("1 - %v", reflect.ValueOf(model.Value).Type().Kind() == reflect.Pointer)
 	rvalue := reflect.ValueOf(value)
 	if rvalue.Type().Kind() == reflect.Pointer {
 		value = reflect.Indirect(rvalue).Interface()
@@ -141,25 +113,4 @@ func (model *DynamicModel) String() string {
 
 func (model *DynamicModel) List() []Model {
 	panic(fmt.Errorf("the operation 'List()' is not support by %T", model))
-}
-
-func PlayWithModels() {
-	model0 := GenericModel{Value: nil}
-	log.Printf("model0 -> %s", &model0)
-
-	model1 := GenericModel{Value: 1}
-	log.Printf("model1 -> %s", &model1)
-
-	model2 := NewGenericModel("olala")
-	log.Printf("model2 -> %s", model2)
-
-	model3 := GenericListModel{Value: []Model{&GenericModel{Value: 1}}}
-	log.Printf("model2 -> %v", model3.List())
-
-	model4 := NewGenericListModel(1, 2, "a", NewGenericModel(12))
-	log.Printf("model2 -> %v", model4.List())
-
-	value5 := 123
-	model5 := GenericModel{Value: &value5}
-	log.Printf("model5 -> %s", model5.String())
 }

@@ -87,7 +87,6 @@ func (target *AjaxTarget) Process(requestData []byte) ([]byte, error) {
 	if !ok {
 		return nil, fmt.Errorf("bejavior %s not found", target.ajaxRequest.BejaviorId)
 	}
-	// holder := FindAjaxHandler(target.page, target.ajaxRequest.Handler)
 	bejavior.ajaxCallback(target)
 	responseData, err := target.Marshal()
 	if err != nil {
