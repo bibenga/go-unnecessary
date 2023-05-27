@@ -1,0 +1,141 @@
+package unnecessary
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"log"
+
+	"golang.org/x/net/html"
+	"golang.org/x/net/html/atom"
+)
+
+func render2(component *Component) {
+	if !component.isEnabled {
+		component.parent.node.RemoveChild(component.node)
+		return
+	}
+	if component.populateItemCallback != nil {
+		var itemsModel []Model = component.model.List()
+		if len(itemsModel) == 0 {
+			component.node.Parent.RemoveChild(component.node)
+		} else {
+			parentNode := component.node.Parent
+			templateNode := CloneNodeTree(component.node, true)
+			nodeNextSibling := component.node.NextSibling
+			for itemIndex, itemModel := range itemsModel {
+				var itemNode *html.Node
+				if itemIndex == 0 {
+					itemNode = component.node
+				} else {
+					itemNode = CloneNodeTree(templateNode, true)
+					parentNode.InsertBefore(itemNode, nodeNextSibling)
+				}
+				itemId := fmt.Sprintf("__%s__%d", component.Id, itemIndex)
+				NodeSetAttr(itemNode, NodeIdAttrName, itemId)
+
+				itemComponent := NewComponent(itemId, nil)
+				component.parent.Add(itemComponent)
+				component.populateItemCallback(itemComponent, itemIndex, itemModel)
+				render2(itemComponent)
+			}
+		}
+
+	} else if component.model != nil {
+		value := component.model.String()
+		if component.node.DataAtom == atom.Input {
+			NodeSetAttr(component.node, "value", value)
+		} else {
+			NodeSetText(component.node, value)
+		}
+	}
+
+	if component.children != nil {
+		for _, child := range component.children {
+			render2(child)
+		}
+	}
+}
+
+func collectPageScript(component *Component) {
+	if !component.isEnabled {
+		return
+	}
+	if component.page != nil && len(component.bejaviors) > 0 {
+		script := ""
+		for _, bejavior := range component.bejaviors {
+			script += *bejavior.GetScript(true)
+		}
+		script = fmt.Sprintf("(function(){%s;})();", script)
+
+		scriptTag := html.Node{
+			Type:     html.ElementNode,
+			DataAtom: atom.Script,
+			Data:     "script",
+			Attr: []html.Attribute{
+				{Namespace: "", Key: "id", Val: fmt.Sprintf("s-%s", component.GetMarkupId())},
+				{Namespace: "", Key: "type", Val: "text/javascript"},
+			},
+		}
+		scriptTag.AppendChild(&html.Node{
+			Type: html.TextNode,
+			Data: script,
+		})
+		head := FindNodeByTag(component.page.node, "head")
+		head.AppendChild(&scriptTag)
+	}
+
+	for _, child := range component.children {
+		collectPageScript(child)
+	}
+}
+
+func collectAjaxScript(component *Component) string {
+	if !component.isEnabled {
+		return ""
+	}
+	script := ""
+	if component.bejaviors != nil {
+		for _, bejavior := range component.bejaviors {
+			script += *bejavior.GetScript(false)
+		}
+	}
+	for _, child := range component.children {
+		script += collectAjaxScript(child)
+	}
+	return script
+}
+
+func RenderPage(page *Component) (string, error) {
+	render2(page)
+	collectPageScript(page)
+	return MarshalNode(page.node)
+}
+
+func RenderComponent(component *Component) (string, error) {
+	render2(component)
+	return MarshalNode(component.node)
+}
+
+func Serialization() {
+	gob.Register(Component{})
+	gob.Register(&html.Node{})
+
+	page, err := NewWicketPage("html/page2.html")
+	if err != nil {
+		panic(err)
+	}
+
+	var network bytes.Buffer        // Stand-in for a network connection
+	enc := gob.NewEncoder(&network) // Will write to network.
+	dec := gob.NewDecoder(&network) // Will read from network.
+	if err := enc.Encode(page); err != nil {
+		log.Fatal("encode error:", err)
+	}
+	log.Printf("encoded: %v", network.String())
+	// Decode (receive) and print the values.
+	var page2 Component
+	if err = dec.Decode(&page2); err != nil {
+		log.Fatal("decode error 1:", err)
+	}
+}
