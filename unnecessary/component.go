@@ -2,7 +2,6 @@ package unnecessary
 
 import (
 	"fmt"
-	"os"
 
 	"golang.org/x/net/html"
 )
@@ -25,13 +24,7 @@ type Component struct {
 }
 
 func NewWicketPage(file string) (*Component, error) {
-	data, err := os.Open(file)
-	if err != nil {
-		return nil, err
-	}
-	defer data.Close()
-
-	doc, err := html.Parse(data)
+	doc, err := ParseHtmlFile(file)
 	if err != nil {
 		return nil, err
 	}

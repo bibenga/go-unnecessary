@@ -2,6 +2,8 @@ package unnecessary
 
 import (
 	"bytes"
+	"io"
+	"os"
 
 	"golang.org/x/net/html"
 )
@@ -134,7 +136,24 @@ func CloneNodeTree(src *html.Node, includeChildren bool) *html.Node {
 	return dst
 }
 
-func MarshalNode(node *html.Node) (string, error) {
+func ParseHtmlFile(file string) (*html.Node, error) {
+	data, err := os.Open(file)
+	if err != nil {
+		return nil, err
+	}
+	defer data.Close()
+	return ParseHtml(data)
+}
+
+func ParseHtml(r io.Reader) (*html.Node, error) {
+	doc, err := html.Parse(r)
+	if err != nil {
+		return nil, err
+	}
+	return doc, nil
+}
+
+func RenderNode(node *html.Node) (string, error) {
 	buf := new(bytes.Buffer)
 	err := html.Render(buf, node)
 	if err != nil {

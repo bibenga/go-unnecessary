@@ -106,10 +106,10 @@ func collectAjaxScript(component *Component) string {
 func RenderPage(page *Component) (string, error) {
 	render2(page)
 	collectPageScript(page)
-	return MarshalNode(page.node)
+	return RenderNode(page.node)
 }
 
 func RenderComponent(component *Component) (string, error) {
 	render2(component)
-	return MarshalNode(component.node)
+	return RenderNode(component.node)
 }
