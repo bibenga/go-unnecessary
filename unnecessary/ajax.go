@@ -6,7 +6,7 @@ import (
 )
 
 type AjaxRequest struct {
-	BejaviorId string `json:"bejaviorId"`
+	BehaviorId string `json:"behaviorId"`
 	ElementId  string `json:"elementId"`
 	Event      string `json:"event"`
 }
@@ -83,11 +83,11 @@ func (target *AjaxTarget) Process(requestData []byte) ([]byte, error) {
 	if err := target.Unmarshal(requestData); err != nil {
 		return nil, err
 	}
-	bejavior, ok := target.page.bejaviors[target.ajaxRequest.BejaviorId]
+	behavior, ok := target.page.behaviors[target.ajaxRequest.BehaviorId]
 	if !ok {
-		return nil, fmt.Errorf("bejavior %s not found", target.ajaxRequest.BejaviorId)
+		return nil, fmt.Errorf("behavior %s not found", target.ajaxRequest.BehaviorId)
 	}
-	bejavior.ajaxCallback(target)
+	behavior.ajaxCallback(target)
 	responseData, err := target.Marshal()
 	if err != nil {
 		return nil, err

@@ -7,60 +7,7 @@
     <link rel="stylesheet" href="/static/bootstrap-5.2.3/css/bootstrap.min.css">
     <script type="text/javascript" src="/static/bootstrap-5.2.3/js/bootstrap.bundle.min.js"></script>
 
-    <script async type="text/javascript">
-        async function UnnecessaryInvoke(bejaviorId, eventCode, elementId) {
-            try {
-                var link = window.location.href;
-                if (link.indexOf('?') >= 0) {
-                    link += '&anticache=' + Math.random()
-                } else {
-                    link += '?anticache=' + Math.random()
-                }
-                var response = await fetch(link, {
-                    method: "POST",
-                    credentials: "same-origin",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        "bejaviorId": bejaviorId,
-                        "eventCode": eventCode,
-                        "elementId": elementId,
-                    }),
-                });
-                var ajaxResponse = await response.json();
-                ajaxResponse.items.forEach(item => {
-                    console.log(item);
-                    el = document.getElementById(item.markupId);
-                    if (!!item.body) {
-                        el.outerHTML = item.body;
-                    }
-                    if (!!item.script) {
-                        // todo: insecure
-                        eval(item.script);
-                    }
-                });
-            } catch (e) {
-                console.log(e);
-            }
-        }
-        function UnnecessaryAddEventListener(lazy, bejaviorId, eventCode, elementId) {
-            var link = () => {
-                var el = document.getElementById(elementId);
-                el.addEventListener(eventCode, event => {
-                    UnnecessaryInvoke(bejaviorId, eventCode, elementId)
-                    event.preventDefault();
-                    event.stopPropagation();
-                    return false;
-                });
-            }
-            if (lazy) {
-                document.addEventListener("DOMContentLoaded", link);
-            } else {
-                link();
-            }
-        }
-    </script>
+    <script type="text/javascript" src="/static/unnecessary.js"></script>
 
     <unnecessary:head>
         <!-- html parser from GO move this tag into body! -->

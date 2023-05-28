@@ -6,8 +6,9 @@ import (
 )
 
 func ValueToString(value interface{}) string {
-	rvalue := reflect.ValueOf(value)
-	if rvalue.Type().Kind() == reflect.Pointer {
+	switch reflect.TypeOf(value).Kind() {
+	case reflect.Pointer:
+		rvalue := reflect.ValueOf(value)
 		value = reflect.Indirect(rvalue).Interface()
 	}
 	switch v := value.(type) {
@@ -15,6 +16,30 @@ func ValueToString(value interface{}) string {
 		return v
 	default:
 		return fmt.Sprintf("%v", value)
+	}
+}
+
+func ValueIsSlice(value interface{}) bool {
+	return reflect.TypeOf(value).Kind() == reflect.Slice
+}
+
+func ValueToSlice(value interface{}) ([]interface{}, error) {
+	switch reflect.TypeOf(value).Kind() {
+	case reflect.Pointer:
+		rvalue := reflect.ValueOf(value)
+		value = reflect.Indirect(rvalue).Interface()
+	}
+
+	switch reflect.TypeOf(value).Kind() {
+	case reflect.Slice:
+		rvalue := reflect.ValueOf(value)
+		out := make([]interface{}, rvalue.Len())
+		for i := 0; i < rvalue.Len(); i++ {
+			out[i] = rvalue.Index(i).Interface()
+		}
+		return out, nil
+	default:
+		return nil, fmt.Errorf("value is not slice")
 	}
 }
 

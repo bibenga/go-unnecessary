@@ -10,55 +10,55 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	"unnecessary/unnecessary"
+	u "unnecessary/unnecessary"
 )
 
 var page2Count uint64 = 0
 
 func page2(w http.ResponseWriter, r *http.Request) {
-	page, err := unnecessary.NewWicketPage("html/page2.html")
+	page, err := u.NewWicketPage("html/page2.html")
 	if err != nil {
 		panic(err)
 	}
 
-	holder := unnecessary.NewComponent("holder", nil)
+	holder := u.NewComponent("holder", nil)
 	page.Add(holder)
 	holder.SetOutputMarkupId(true)
 
-	rawValue := unnecessary.NewComponent("rawValue", unnecessary.NewGenericModel(page2Count))
+	rawValue := u.NewComponent("rawValue", u.NewGenericModel(page2Count))
 	holder.Add(rawValue)
 
-	dynamicModel := unnecessary.NewDynamicModel(func() interface{} { return page2Count })
-	holder.Add(unnecessary.NewComponent("dynamicValue", dynamicModel))
-	holder.Add(unnecessary.NewComponent("textValue", dynamicModel))
-	holder.Add(unnecessary.NewComponent("textareaValue", dynamicModel))
+	dynamicModel := u.NewDynamicModel(func() interface{} { return page2Count })
+	holder.Add(u.NewComponent("dynamicValue", dynamicModel))
+	holder.Add(u.NewComponent("textValue", dynamicModel))
+	holder.Add(u.NewComponent("textareaValue", dynamicModel))
 
-	btnPlus1 := unnecessary.NewComponent("btnPlus1", nil)
+	btnPlus1 := u.NewComponent("btnPlus1", nil)
 	holder.Add(btnPlus1)
 	btnPlus1.SetOutputMarkupId(true)
-	btnPlus1.AddBejavior(unnecessary.NewAjaxBejavior("click", func(target *unnecessary.AjaxTarget) error {
+	btnPlus1.AddBehavior(u.NewAjaxBehavior("click", func(target *u.AjaxTarget) error {
 		page2Count += 1
-		rawValue.SetModel(unnecessary.NewGenericModel(page2Count))
+		rawValue.SetModel(u.NewGenericModel(page2Count))
 		target.Add(holder)
 		return nil
 	}))
 
-	btnMenos1 := unnecessary.NewComponent("btnMenos1", nil)
+	btnMenos1 := u.NewComponent("btnMenos1", nil)
 	holder.Add(btnMenos1)
 	btnMenos1.SetOutputMarkupId(true)
-	btnMenos1.AddBejavior(unnecessary.NewAjaxBejavior("click", func(target *unnecessary.AjaxTarget) error {
+	btnMenos1.AddBehavior(u.NewAjaxBehavior("click", func(target *u.AjaxTarget) error {
 		page2Count -= 1
-		rawValue.SetModel(unnecessary.NewGenericModel(page2Count))
+		rawValue.SetModel(u.NewGenericModel(page2Count))
 		target.Add(holder)
 		return nil
 	}))
 
 	// simple loop
 	// loop := wicket.NewComponent(holder, "loop", loopModel)
-	loop := unnecessary.NewComponent("loop", unnecessary.NewGenericListModel(1.1, 2, 3))
+	loop := u.NewComponent("loop", u.NewGenericListModel(1.1, 2, 3))
 	holder.Add(loop)
-	loop.SetPopulateItemCallback(func(loopItem *unnecessary.Component, index int, model unnecessary.Model) {
-		v := model.(*unnecessary.GenericModel)
+	loop.SetPopulateItemCallback(func(loopItem *u.Component, index int, model u.Model) {
+		v := model.(*u.GenericModel)
 		v2 := v.Value
 		var v3 float64
 		switch v := v2.(type) {
@@ -69,30 +69,30 @@ func page2(w http.ResponseWriter, r *http.Request) {
 		default:
 			panic("Olala")
 		}
-		loopItem.Add(unnecessary.NewComponent("loopValue", unnecessary.NewGenericModel(v3)))
+		loopItem.Add(u.NewComponent("loopValue", u.NewGenericModel(v3)))
 	})
 
 	// table
-	tr := unnecessary.NewComponent("tr", unnecessary.NewGenericListModel(
-		unnecessary.NewGenericListModel("11", "12"),
-		unnecessary.NewGenericListModel("21", "22"),
+	tr := u.NewComponent("tr", u.NewGenericListModel(
+		u.NewGenericListModel("11", "12"),
+		u.NewGenericListModel("21", "22"),
 	))
 	holder.Add(tr)
-	tr.SetPopulateItemCallback(func(trItem *unnecessary.Component, trIndex int, trModel unnecessary.Model) {
-		td := trItem.Add(unnecessary.NewComponent("td", trModel))
-		td.SetPopulateItemCallback(func(tdItem *unnecessary.Component, tdIndex int, tdModel unnecessary.Model) {
+	tr.SetPopulateItemCallback(func(trItem *u.Component, trIndex int, trModel u.Model) {
+		td := trItem.Add(u.NewComponent("td", trModel))
+		td.SetPopulateItemCallback(func(tdItem *u.Component, tdIndex int, tdModel u.Model) {
 			tdModelStr := fmt.Sprintf("%s:%d", tdModel.String(), page2Count)
-			tdItem.SetModel(unnecessary.NewGenericModel(tdModelStr))
+			tdItem.SetModel(u.NewGenericModel(tdModelStr))
 		})
 	})
 
 	// not enabled component
-	notEnabled := unnecessary.NewComponent("notEnabled", nil)
+	notEnabled := u.NewComponent("notEnabled", nil)
 	notEnabled.SetIsEnabled(false)
 	holder.Add(notEnabled)
 
 	if r.Method == "GET" {
-		pageStr, err := unnecessary.RenderPage(page)
+		pageStr, err := u.RenderPage(page)
 		if err != nil {
 			panic(err)
 		}
@@ -104,7 +104,7 @@ func page2(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-		responseData, err := unnecessary.ProcessAjaxRequest(page, requestData)
+		responseData, err := u.ProcessAjaxRequest(page, requestData)
 		if err != nil {
 			panic(err)
 		}
@@ -114,7 +114,10 @@ func page2(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func page2Serve() {
+func main() {
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile | log.Lmsgprefix)
+	log.SetPrefix("")
+
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
 	router.Use(middleware.Logger)
@@ -134,17 +137,10 @@ func page2Serve() {
 	router.Get("/page2", page2)
 	router.Post("/page2", page2)
 
-	log.Print("ready...")
+	log.Print("ready at 8000 port: http://127.0.0.1:8000")
 	if err := http.ListenAndServe(":8000", router); err != nil {
 		log.Panicf("Terminated - %v", err)
 	} else {
 		log.Panicf("Terminated")
 	}
-}
-
-func main() {
-	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile | log.Lmsgprefix)
-	log.SetPrefix("")
-
-	page2Serve()
 }

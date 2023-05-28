@@ -18,7 +18,7 @@ type Component struct {
 	children             []*Component
 	model                Model
 	populateItemCallback PopulateItemCallback
-	bejaviors            map[string]*Bejavior
+	behaviors            map[string]*Behavior
 	isEnabled            bool
 	counter              int // page level property
 }
@@ -102,20 +102,20 @@ func (component *Component) DelAttr(key string) {
 	NodeDelAttr(component.node, key)
 }
 
-func (component *Component) AddBejavior(bejavior *Bejavior) {
+func (component *Component) AddBehavior(behavior *Behavior) {
 	component.SetOutputMarkupId(true)
 	page := component.GetPage()
-	if page.bejaviors == nil {
-		page.bejaviors = make(map[string]*Bejavior)
+	if page.behaviors == nil {
+		page.behaviors = make(map[string]*Behavior)
 	}
-	if component.bejaviors == nil {
-		component.bejaviors = make(map[string]*Bejavior)
+	if component.behaviors == nil {
+		component.behaviors = make(map[string]*Behavior)
 	}
-	bejavior.Id = fmt.Sprintf("handler-%d", component.GetNextCounterValue())
-	bejavior.component = component
-	bejavior.page = page
-	page.bejaviors[bejavior.Id] = bejavior
-	component.bejaviors[bejavior.Id] = bejavior
+	behavior.Id = fmt.Sprintf("handler-%d", component.GetNextCounterValue())
+	behavior.component = component
+	behavior.page = page
+	page.behaviors[behavior.Id] = behavior
+	component.behaviors[behavior.Id] = behavior
 }
 
 func (component *Component) SetIsEnabled(isEnabled bool) {

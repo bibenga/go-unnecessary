@@ -58,10 +58,10 @@ func collectPageScript(component *Component) {
 	if !component.isEnabled {
 		return
 	}
-	if component.page != nil && len(component.bejaviors) > 0 {
+	if component.page != nil && len(component.behaviors) > 0 {
 		script := ""
-		for _, bejavior := range component.bejaviors {
-			script += *bejavior.GetScript(true)
+		for _, behavior := range component.behaviors {
+			script += *behavior.GetScript(true)
 		}
 		script = fmt.Sprintf("(function(){%s;})();", script)
 
@@ -92,9 +92,9 @@ func collectAjaxScript(component *Component) string {
 		return ""
 	}
 	script := ""
-	if component.bejaviors != nil {
-		for _, bejavior := range component.bejaviors {
-			script += *bejavior.GetScript(false)
+	if component.behaviors != nil {
+		for _, behavior := range component.behaviors {
+			script += *behavior.GetScript(false)
 		}
 	}
 	for _, child := range component.children {
