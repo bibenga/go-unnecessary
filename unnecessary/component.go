@@ -2,6 +2,8 @@ package unnecessary
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 
 	"golang.org/x/net/html"
 )
@@ -129,5 +131,29 @@ func (component *Component) GetNextCounterValue() int {
 		return value
 	} else {
 		return component.GetPage().GetNextCounterValue()
+	}
+}
+
+func SimpleProcessRequest(page *Component, w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		pageStr, err := RenderPage(page)
+		if err != nil {
+			panic(err)
+		}
+		w.WriteHeader(200)
+		w.Header().Add("Content-Type", "text/html")
+		w.Write([]byte(pageStr))
+	} else {
+		requestData, err := io.ReadAll(r.Body)
+		if err != nil {
+			panic(err)
+		}
+		responseData, err := ProcessAjaxRequest(page, requestData)
+		if err != nil {
+			panic(err)
+		}
+		w.WriteHeader(200)
+		w.Header().Add("Content-Type", "application/json")
+		w.Write(responseData)
 	}
 }

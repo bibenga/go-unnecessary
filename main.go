@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"math"
 	"net/http"
@@ -91,27 +90,7 @@ func page2(w http.ResponseWriter, r *http.Request) {
 	notEnabled.SetIsEnabled(false)
 	holder.Add(notEnabled)
 
-	if r.Method == "GET" {
-		pageStr, err := u.RenderPage(page)
-		if err != nil {
-			panic(err)
-		}
-		w.WriteHeader(200)
-		w.Header().Add("Content-Type", "text/html")
-		w.Write([]byte(pageStr))
-	} else {
-		requestData, err := io.ReadAll(r.Body)
-		if err != nil {
-			panic(err)
-		}
-		responseData, err := u.ProcessAjaxRequest(page, requestData)
-		if err != nil {
-			panic(err)
-		}
-		w.WriteHeader(200)
-		w.Header().Add("Content-Type", "application/json")
-		w.Write(responseData)
-	}
+	u.SimpleProcessRequest(page, w, r)
 }
 
 func main() {

@@ -1,11 +1,5 @@
 async function UnnecessaryInvoke(behaviorId, eventCode, elementId) {
     try {
-        // var link = window.location.href;
-        // if (link.indexOf('?') >= 0) {
-        //     link += '&anticache=' + Math.random()
-        // } else {
-        //     link += '?anticache=' + Math.random()
-        // }
         var link = new URL(window.location.href);
         link.searchParams.set('anticache', '' + Math.random());
         var response = await fetch(link, {
