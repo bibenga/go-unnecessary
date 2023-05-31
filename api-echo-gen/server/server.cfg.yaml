@@ -1,0 +1,13 @@
+package: server
+generate:
+  # models: true
+  # client: true
+  echo-server: true
+  # chi-server: true
+  embedded-spec: true
+  strict-server: true
+output: server.gen.go
+output-options:
+  skip-prune: true
+# compatibility:
+  # apply-chi-middleware-first-to-last: true

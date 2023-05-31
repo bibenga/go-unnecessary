@@ -1,0 +1,218 @@
+openapi: "3.0.0"
+info:
+  version: 1.2.3
+  title: Unnecessary API
+  description: An Unnecessary API 
+
+servers:
+  - url: /
+
+paths:
+  /api/v1/status:
+    get:
+      operationId: getStatusV1
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: IsFull
+          schema:
+            type: boolean
+        - in: header
+          name: X-Page
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+        - in: header
+          name: X-Page-Size
+          schema:
+            type: integer
+            format: int32
+            minimum: 10
+            maximum: 100
+            default: 10
+      description: |
+        Returns a status.
+      responses:
+        200:
+          description: 
+            Current status
+          headers:
+            X-Page:
+              required: false
+              schema:
+                type: integer
+                format: int32
+              description: Actual page
+            X-Page-Size:
+              schema:
+                type: integer
+                format: int32
+              description: Actual page size
+            X-Page-Count:
+              schema:
+                type: integer
+                format: int32
+              description: Total pages
+          content:
+            application/json:
+              schema:
+                # type: object
+                $ref: '#/components/schemas/GetStatusV1'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/AuthenticationError'
+        403:
+          $ref: '#/components/responses/PermissionDenid'
+
+    post:
+      operationId: setStatusV1
+      description: Set a status.
+      security:
+        - BasicAuth: []
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              # type: object
+              $ref: '#/components/schemas/GetStatusV1'
+      responses:
+        200:
+          description: New Status
+          content:
+            application/json:
+              schema: 
+                # type: object
+                $ref: '#/components/schemas/GetStatusV1'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/AuthenticationError'
+        403:
+          $ref: '#/components/responses/PermissionDenid'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BasicAuth:
+      type: http
+      scheme: basic
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema: 
+            # type: object
+            $ref: '#/components/schemas/Error'
+
+    AuthenticationError:
+      description: Authentication Error
+      content:
+        application/json:
+          schema: 
+            # type: object
+            $ref: '#/components/schemas/Error'
+
+    PermissionDenid:
+      description: Permission Denid
+      content:
+        application/json:
+          schema: 
+            # type: object
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: Error code
+          example: 401
+        message:
+          type: string
+          description: Error message
+          example: Authentication Error
+        error:
+          type: string
+          description: Error description
+    ExtraError:
+      allOf: 
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          properties:
+            rootCause:
+              type: string
+              description: Error location
+
+    GetStatusV1:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          example: FAILURE
+        cpu:
+          type: integer
+          format: int64
+          example: 99
+
+    DictPlatform:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int32
+          example: 1
+          minimum: 0
+          maximum: 63356
+        name:
+          type: string
+          example: 'ANDROID'
+        displayName:
+          type: string
+          example: 'Android'
+
+    Application:
+      type: object
+      required:
+        - id
+        - name
+        - dictPlatformId
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 432
+        name:
+          type: string
+          example: 'Safari'
+        displayName:
+          type: string
+          example: 'Safari Browser'
+        dictPlatformId:
+          type: integer
+          format: int32
+          example: '1'
+        dictPlatform:
+          type: object
+          $ref: '#/components/schemas/DictPlatform'

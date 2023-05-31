@@ -6,7 +6,7 @@ import (
 )
 
 func TestParseHtml(t *testing.T) {
-	htmlData := "<html><head></head><body>olala</body></html>"
+	htmlData := "<html><head></head><body>Unnecessary</body></html>"
 	htmlReader := strings.NewReader(htmlData)
 	html, err := ParseHtml(htmlReader)
 	if err != nil {
@@ -18,7 +18,7 @@ func TestParseHtml(t *testing.T) {
 }
 
 func TestParseHtmlAndRenderNode(t *testing.T) {
-	htmlData := "<html><head></head><body>olala</body></html>"
+	htmlData := "<html><head></head><body>Unnecessary</body></html>"
 	htmlReader := strings.NewReader(htmlData)
 	html, err := ParseHtml(htmlReader)
 	if err != nil {

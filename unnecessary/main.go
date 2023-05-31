@@ -66,7 +66,7 @@ func page2(w http.ResponseWriter, r *http.Request) {
 		case float64:
 			v3 = math.Pow(float64(page2Count), float64(v))
 		default:
-			panic("Olala")
+			panic("die!")
 		}
 		loopItem.Add(u.NewComponent("loopValue", u.NewGenericModel(v3)))
 	})
