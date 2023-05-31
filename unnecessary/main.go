@@ -9,7 +9,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	u "unnecessary/unnecessary"
+	u "unnecessary/unnecessary/unnecessary"
 )
 
 var page2Count uint64 = 0
