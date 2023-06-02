@@ -17,6 +17,7 @@ import (
 	ginMiddleware "github.com/deepmap/oapi-codegen/pkg/gin-middleware"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/gin-contrib/requestid"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -250,10 +251,22 @@ func NewStrictServer(logger *zap.Logger) StrictServerInterface {
 
 func (s *StrictServerImpl) GetStatusV1(c context.Context, request GetStatusV1RequestObject) (GetStatusV1ResponseObject, error) {
 	ctx := c.(*gin.Context)
+
 	logger := s.logger.With(
 		zap.String("requestId", GetRequestId(ctx)),
 		zap.String("user", GetUser(ctx)),
 	)
+
+	session := sessions.Default(ctx)
+	logger.Sugar().Infow(
+		"session value",
+		"hello", session.Get("hello"))
+	if session.Get("hello") != "world" {
+		session.Set("hello", "world")
+	}
+	if err := session.Save(); err != nil {
+		return nil, err
+	}
 
 	logger.Info("GetStatusV1", zap.Reflect("input", request))
 	result := GetStatusV1200JSONResponse{

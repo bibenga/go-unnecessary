@@ -5,8 +5,11 @@ import (
 	"net/http"
 	"unnecessary/api-gin-gen/server"
 
+	ginZero "github.com/gin-contrib/logger"
 	"github.com/gin-contrib/requestid"
 	"github.com/gin-contrib/secure"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	ginZap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -32,6 +35,7 @@ func main() {
 
 	r.Use(requestid.New())
 
+	r.Use(ginZero.SetLogger())
 	r.Use(ginZap.GinzapWithConfig(logger.Named("access"), &ginZap.Config{
 		TimeFormat: "",
 		UTC:        true,
@@ -50,8 +54,10 @@ func main() {
 	r.Use(secure.New(secureConfig))
 	r.Use(gin.Recovery())
 
-	// r.Use(server.ApiLoggerHandler(log.Logger))
+	store := cookie.NewStore([]byte("supersecret"))
+	r.Use(sessions.Sessions("gin-session", store))
 
+	// r.Use(server.ApiLoggerHandler(log.Logger))
 	r.Use(server.Authenticator(logger.Named("auth")))
 	// r.Use(server.Validator())
 
