@@ -6,6 +6,7 @@ import (
 	"context"
 	"log"
 	"net"
+	"sort"
 	"strconv"
 	"time"
 
@@ -61,11 +62,26 @@ func listTopics() {
 		return true
 	}
 
+	topics := make(map[string][]int)
 	for _, p := range partitions {
 		if !accept(p.Topic) {
 			continue
 		}
-		log.Printf("%s, %d", p.Topic, p.ID)
+		partitions, ok := topics[p.Topic]
+		if ok {
+			partitions = append(partitions, p.ID)
+		} else {
+			partitions = []int{p.ID}
+		}
+		sort.Ints(partitions)
+		topics[p.Topic] = partitions
+	}
+	if len(topics) == 0 {
+		log.Printf("there are no topics")
+	} else {
+		for topic, partitions := range topics {
+			log.Printf("%s - %v", topic, partitions)
+		}
 	}
 }
 
@@ -148,26 +164,9 @@ func (b *PredefinedPartitionBalancer) Balance(message kafka.Message, partitions 
 	return message.Partition
 }
 
-func readAndWrite(topic string) {
-	ctx := context.Background()
-
-	rlog := log.New(log.Default().Writer(), "[reader] - ", log.Default().Flags())
-	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers: []string{broker},
-		Dialer: &kafka.Dialer{
-			Timeout:   10 * time.Second,
-			DualStack: true,
-			ClientID:  "go-writer",
-		},
-		Topic:          topic,
-		GroupID:        "UnnecessaryID",
-		Logger:         rlog,
-		ErrorLogger:    rlog,
-		IsolationLevel: kafka.ReadCommitted,
-	})
-	defer r.Close()
-
+func writer(ctx context.Context, topic string) {
 	wlog := log.New(log.Default().Writer(), "[writer] - ", log.Default().Flags())
+
 	w := kafka.NewWriter(kafka.WriterConfig{
 		Brokers: []string{broker},
 		Dialer: &kafka.Dialer{
@@ -181,34 +180,92 @@ func readAndWrite(topic string) {
 		ErrorLogger: wlog,
 	})
 	w.AllowAutoTopicCreation = false
-	err := w.WriteMessages(
-		ctx,
-		kafka.Message{Topic: topic, Partition: 0, Value: []byte("v0")},
-		kafka.Message{Topic: topic, Partition: 1, Value: []byte("v1")},
-		kafka.Message{Topic: topic, Partition: 4, Value: []byte("v4")},
-	)
-	if err != nil {
-		log.Fatal("failed to write messages:", err)
-	}
 	defer w.Close()
 
+	t := time.NewTicker(1 * time.Second)
+	defer t.Stop()
+
+	log.Print("writing...")
+	func() {
+		for {
+			select {
+			case <-ctx.Done():
+				wlog.Print("break")
+				return
+			case <-t.C:
+				wlog.Print("write messages")
+				err := w.WriteMessages(
+					ctx,
+					kafka.Message{Topic: topic, Partition: 0, Value: []byte("v0")},
+					kafka.Message{Topic: topic, Partition: 1, Value: []byte("v1")},
+					kafka.Message{Topic: topic, Partition: 4, Value: []byte("v4")},
+				)
+				if err != nil {
+					wlog.Fatal("failed to write messages:", err)
+				}
+			}
+		}
+	}()
+
+	t.Stop()
+
+	if err := w.Close(); err != nil {
+		wlog.Fatal("failed to close reader:", err)
+	}
+}
+
+func reader(ctx context.Context, topic string) {
+	rlog := log.New(log.Default().Writer(), "[reader] - ", log.Default().Flags())
+
+	r := kafka.NewReader(kafka.ReaderConfig{
+		Brokers: []string{broker},
+		Dialer: &kafka.Dialer{
+			Timeout:   10 * time.Second,
+			DualStack: true,
+			ClientID:  "go-reader",
+		},
+		Topic:          topic,
+		GroupID:        "UnnecessaryID",
+		Logger:         rlog,
+		ErrorLogger:    rlog,
+		IsolationLevel: kafka.ReadCommitted,
+	})
+	defer r.Close()
+
+	rlog.Print("reading...")
 	for {
 		m, err := r.ReadMessage(ctx)
 		if err != nil {
-			log.Fatal("failed to read message", err)
+			rlog.Fatal("failed to read message", err)
 			break
 		}
-		log.Printf("message at offset Topic=(%s) Partition=%d Offset=%d Key=(%s) Value=(%s)",
+		rlog.Printf("message at offset Topic=(%s) Partition=%d Offset=%d Key=(%s) Value=(%s)",
 			m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
 	}
 
 	if err := r.Close(); err != nil {
-		log.Fatal("failed to close reader:", err)
+		rlog.Fatal("failed to close reader:", err)
+	}
+}
+
+func readAndWrite(topic string) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go reader(ctx, topic)
+	time.Sleep(3 * time.Second)
+	go writer(ctx, topic)
+
+	log.Printf("working...")
+	for i := 0; i < 10; i++ {
+		log.Printf("tik %d", i)
+		time.Sleep(1 * time.Second)
 	}
 
-	if err := w.Close(); err != nil {
-		log.Fatal("failed to close reader:", err)
-	}
+	log.Printf("cancel...")
+	cancel()
+	time.Sleep(1 * time.Second)
+	log.Printf("terminated")
 }
 
 func main() {
@@ -218,5 +275,5 @@ func main() {
 	listTopics()
 	// deleteTopic("t1")
 	// createTopic("t1")
-	readAndWrite("t1")
+	// readAndWrite("t1")
 }
