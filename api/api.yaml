@@ -5,10 +5,10 @@ info:
   description: An Unnecessary API 
 
 servers:
-  - url: /
+  - url: /api
 
 paths:
-  /api/v1/status:
+  /v1/status:
     get:
       operationId: getStatusV1
       parameters:

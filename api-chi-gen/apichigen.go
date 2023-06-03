@@ -77,6 +77,7 @@ func main() {
 		},
 	)
 	router.Mount("/", server.HandlerWithOptions(strictApi, server.ChiServerOptions{
+		BaseURL: "/api",
 		Middlewares: []server.MiddlewareFunc{
 			server.Authenticator,
 			validator,

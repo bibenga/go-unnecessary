@@ -86,7 +86,7 @@ func main() {
 
 	ssrv2 := server.NewStrictServer()
 	h2 := server.NewStrictHandler(ssrv2, nil)
-	server.RegisterHandlers(e, h2)
+	server.RegisterHandlersWithBaseURL(e, h2, "/api")
 
 	e.GET("/docs2", func(ctx echo.Context) (err error) {
 		return ctx.Redirect(http.StatusTemporaryRedirect, "/docs2/")

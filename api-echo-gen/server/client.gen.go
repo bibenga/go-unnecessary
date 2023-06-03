@@ -143,7 +143,7 @@ func NewGetStatusV1Request(server string, params *GetStatusV1Params) (*http.Requ
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/status")
+	operationPath := fmt.Sprintf("/v1/status")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -241,7 +241,7 @@ func NewSetStatusV1RequestWithBody(server string, contentType string, body io.Re
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/status")
+	operationPath := fmt.Sprintf("/v1/status")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}

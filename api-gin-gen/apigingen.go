@@ -71,6 +71,7 @@ func main() {
 	ssrv2 := server.NewStrictServer(logger.Named("api"))
 	h2 := server.NewStrictHandler(ssrv2, []server.StrictMiddlewareFunc{})
 	server.RegisterHandlersWithOptions(r, h2, server.GinServerOptions{
+		BaseURL: "/api",
 		Middlewares: []server.MiddlewareFunc{
 			server.Validator(),
 		},

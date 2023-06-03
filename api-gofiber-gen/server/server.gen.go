@@ -8,7 +8,6 @@ import (
 	"compress/gzip"
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -17,124 +16,119 @@ import (
 
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/labstack/echo/v4"
+	"github.com/gofiber/fiber/v2"
 )
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
 	// (GET /v1/status)
-	GetStatusV1(ctx echo.Context, params GetStatusV1Params) error
+	GetStatusV1(c *fiber.Ctx, params GetStatusV1Params) error
 
 	// (POST /v1/status)
-	SetStatusV1(ctx echo.Context) error
+	SetStatusV1(c *fiber.Ctx) error
 }
 
-// ServerInterfaceWrapper converts echo contexts to parameters.
+// ServerInterfaceWrapper converts contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
 }
 
-// GetStatusV1 converts echo context to params.
-func (w *ServerInterfaceWrapper) GetStatusV1(ctx echo.Context) error {
+type MiddlewareFunc fiber.Handler
+
+// GetStatusV1 operation middleware
+func (siw *ServerInterfaceWrapper) GetStatusV1(c *fiber.Ctx) error {
+
 	var err error
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetStatusV1Params
+
+	var query url.Values
+	query, err = url.ParseQuery(string(c.Request().URI().QueryString()))
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for query string: %w", err).Error())
+	}
+
 	// ------------- Optional query parameter "q" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "q", ctx.QueryParams(), &params.Q)
+	err = runtime.BindQueryParameter("form", true, false, "q", query, &params.Q)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter q: %s", err))
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter q: %w", err).Error())
 	}
 
 	// ------------- Optional query parameter "IsFull" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "IsFull", ctx.QueryParams(), &params.IsFull)
+	err = runtime.BindQueryParameter("form", true, false, "IsFull", query, &params.IsFull)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter IsFull: %s", err))
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter IsFull: %w", err).Error())
 	}
 
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Page" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Page")]; found {
-		var XPage int32
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Page, got %d", n))
-		}
+	headers := c.GetReqHeaders()
 
-		err = runtime.BindStyledParameterWithLocation("simple", false, "X-Page", runtime.ParamLocationHeader, valueList[0], &XPage)
+	// ------------- Optional header parameter "X-Page" -------------
+	if value, found := headers[http.CanonicalHeaderKey("X-Page")]; found {
+		var XPage int32
+
+		err = runtime.BindStyledParameterWithLocation("simple", false, "X-Page", runtime.ParamLocationHeader, value, &XPage)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Page: %s", err))
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter X-Page: %w", err).Error())
 		}
 
 		params.XPage = &XPage
-	}
-	// ------------- Optional header parameter "X-Page-Size" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Page-Size")]; found {
-		var XPageSize int32
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Page-Size, got %d", n))
-		}
 
-		err = runtime.BindStyledParameterWithLocation("simple", false, "X-Page-Size", runtime.ParamLocationHeader, valueList[0], &XPageSize)
+	}
+
+	// ------------- Optional header parameter "X-Page-Size" -------------
+	if value, found := headers[http.CanonicalHeaderKey("X-Page-Size")]; found {
+		var XPageSize int32
+
+		err = runtime.BindStyledParameterWithLocation("simple", false, "X-Page-Size", runtime.ParamLocationHeader, value, &XPageSize)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Page-Size: %s", err))
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter X-Page-Size: %w", err).Error())
 		}
 
 		params.XPageSize = &XPageSize
+
 	}
 
-	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetStatusV1(ctx, params)
-	return err
+	return siw.Handler.GetStatusV1(c, params)
 }
 
-// SetStatusV1 converts echo context to params.
-func (w *ServerInterfaceWrapper) SetStatusV1(ctx echo.Context) error {
-	var err error
+// SetStatusV1 operation middleware
+func (siw *ServerInterfaceWrapper) SetStatusV1(c *fiber.Ctx) error {
 
-	ctx.Set(BasicAuthScopes, []string{})
+	c.Context().SetUserValue(BasicAuthScopes, []string{})
 
-	ctx.Set(ApiKeyAuthScopes, []string{})
+	c.Context().SetUserValue(ApiKeyAuthScopes, []string{})
 
-	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.SetStatusV1(ctx)
-	return err
+	return siw.Handler.SetStatusV1(c)
 }
 
-// This is a simple interface which specifies echo.Route addition functions which
-// are present on both echo.Echo and echo.Group, since we want to allow using
-// either of them for path registration
-type EchoRouter interface {
-	CONNECT(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	DELETE(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	GET(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	HEAD(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	OPTIONS(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	PATCH(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	POST(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	PUT(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	TRACE(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+// FiberServerOptions provides options for the Fiber server.
+type FiberServerOptions struct {
+	BaseURL     string
+	Middlewares []MiddlewareFunc
 }
 
-// RegisterHandlers adds each server route to the EchoRouter.
-func RegisterHandlers(router EchoRouter, si ServerInterface) {
-	RegisterHandlersWithBaseURL(router, si, "")
+// RegisterHandlers creates http.Handler with routing matching OpenAPI spec.
+func RegisterHandlers(router fiber.Router, si ServerInterface) {
+	RegisterHandlersWithOptions(router, si, FiberServerOptions{})
 }
 
-// Registers handlers, and prepends BaseURL to the paths, so that the paths
-// can be served under a prefix.
-func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL string) {
-
+// RegisterHandlersWithOptions creates http.Handler with additional options
+func RegisterHandlersWithOptions(router fiber.Router, si ServerInterface, options FiberServerOptions) {
 	wrapper := ServerInterfaceWrapper{
 		Handler: si,
 	}
 
-	router.GET(baseURL+"/v1/status", wrapper.GetStatusV1)
-	router.POST(baseURL+"/v1/status", wrapper.SetStatusV1)
+	for _, m := range options.Middlewares {
+		router.Use(m)
+	}
+
+	router.Get(options.BaseURL+"/v1/status", wrapper.GetStatusV1)
+
+	router.Post(options.BaseURL+"/v1/status", wrapper.SetStatusV1)
 
 }
 
@@ -149,7 +143,7 @@ type GetStatusV1RequestObject struct {
 }
 
 type GetStatusV1ResponseObject interface {
-	VisitGetStatusV1Response(w http.ResponseWriter) error
+	VisitGetStatusV1Response(ctx *fiber.Ctx) error
 }
 
 type GetStatusV1200ResponseHeaders struct {
@@ -163,43 +157,43 @@ type GetStatusV1200JSONResponse struct {
 	Headers GetStatusV1200ResponseHeaders
 }
 
-func (response GetStatusV1200JSONResponse) VisitGetStatusV1Response(w http.ResponseWriter) error {
-	w.Header().Set("X-Page", fmt.Sprint(response.Headers.XPage))
-	w.Header().Set("X-Page-Count", fmt.Sprint(response.Headers.XPageCount))
-	w.Header().Set("X-Page-Size", fmt.Sprint(response.Headers.XPageSize))
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+func (response GetStatusV1200JSONResponse) VisitGetStatusV1Response(ctx *fiber.Ctx) error {
+	ctx.Response().Header.Set("X-Page", fmt.Sprint(response.Headers.XPage))
+	ctx.Response().Header.Set("X-Page-Count", fmt.Sprint(response.Headers.XPageCount))
+	ctx.Response().Header.Set("X-Page-Size", fmt.Sprint(response.Headers.XPageSize))
+	ctx.Response().Header.Set("Content-Type", "application/json")
+	ctx.Status(200)
 
-	return json.NewEncoder(w).Encode(response.Body)
+	return ctx.JSON(&response.Body)
 }
 
 type GetStatusV1400JSONResponse struct{ BadRequestJSONResponse }
 
-func (response GetStatusV1400JSONResponse) VisitGetStatusV1Response(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
+func (response GetStatusV1400JSONResponse) VisitGetStatusV1Response(ctx *fiber.Ctx) error {
+	ctx.Response().Header.Set("Content-Type", "application/json")
+	ctx.Status(400)
 
-	return json.NewEncoder(w).Encode(response)
+	return ctx.JSON(&response)
 }
 
 type GetStatusV1401JSONResponse struct {
 	AuthenticationErrorJSONResponse
 }
 
-func (response GetStatusV1401JSONResponse) VisitGetStatusV1Response(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
+func (response GetStatusV1401JSONResponse) VisitGetStatusV1Response(ctx *fiber.Ctx) error {
+	ctx.Response().Header.Set("Content-Type", "application/json")
+	ctx.Status(401)
 
-	return json.NewEncoder(w).Encode(response)
+	return ctx.JSON(&response)
 }
 
 type GetStatusV1403JSONResponse struct{ PermissionDenidJSONResponse }
 
-func (response GetStatusV1403JSONResponse) VisitGetStatusV1Response(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
+func (response GetStatusV1403JSONResponse) VisitGetStatusV1Response(ctx *fiber.Ctx) error {
+	ctx.Response().Header.Set("Content-Type", "application/json")
+	ctx.Status(403)
 
-	return json.NewEncoder(w).Encode(response)
+	return ctx.JSON(&response)
 }
 
 type SetStatusV1RequestObject struct {
@@ -207,45 +201,45 @@ type SetStatusV1RequestObject struct {
 }
 
 type SetStatusV1ResponseObject interface {
-	VisitSetStatusV1Response(w http.ResponseWriter) error
+	VisitSetStatusV1Response(ctx *fiber.Ctx) error
 }
 
 type SetStatusV1200JSONResponse GetStatusV1
 
-func (response SetStatusV1200JSONResponse) VisitSetStatusV1Response(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+func (response SetStatusV1200JSONResponse) VisitSetStatusV1Response(ctx *fiber.Ctx) error {
+	ctx.Response().Header.Set("Content-Type", "application/json")
+	ctx.Status(200)
 
-	return json.NewEncoder(w).Encode(response)
+	return ctx.JSON(&response)
 }
 
 type SetStatusV1400JSONResponse struct{ BadRequestJSONResponse }
 
-func (response SetStatusV1400JSONResponse) VisitSetStatusV1Response(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
+func (response SetStatusV1400JSONResponse) VisitSetStatusV1Response(ctx *fiber.Ctx) error {
+	ctx.Response().Header.Set("Content-Type", "application/json")
+	ctx.Status(400)
 
-	return json.NewEncoder(w).Encode(response)
+	return ctx.JSON(&response)
 }
 
 type SetStatusV1401JSONResponse struct {
 	AuthenticationErrorJSONResponse
 }
 
-func (response SetStatusV1401JSONResponse) VisitSetStatusV1Response(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
+func (response SetStatusV1401JSONResponse) VisitSetStatusV1Response(ctx *fiber.Ctx) error {
+	ctx.Response().Header.Set("Content-Type", "application/json")
+	ctx.Status(401)
 
-	return json.NewEncoder(w).Encode(response)
+	return ctx.JSON(&response)
 }
 
 type SetStatusV1403JSONResponse struct{ PermissionDenidJSONResponse }
 
-func (response SetStatusV1403JSONResponse) VisitSetStatusV1Response(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
+func (response SetStatusV1403JSONResponse) VisitSetStatusV1Response(ctx *fiber.Ctx) error {
+	ctx.Response().Header.Set("Content-Type", "application/json")
+	ctx.Status(403)
 
-	return json.NewEncoder(w).Encode(response)
+	return ctx.JSON(&response)
 }
 
 // StrictServerInterface represents all server handlers.
@@ -258,8 +252,9 @@ type StrictServerInterface interface {
 	SetStatusV1(ctx context.Context, request SetStatusV1RequestObject) (SetStatusV1ResponseObject, error)
 }
 
-type StrictHandlerFunc = runtime.StrictEchoHandlerFunc
-type StrictMiddlewareFunc = runtime.StrictEchoMiddlewareFunc
+type StrictHandlerFunc func(ctx *fiber.Ctx, args interface{}) (interface{}, error)
+
+type StrictMiddlewareFunc func(f StrictHandlerFunc, operationID string) StrictHandlerFunc
 
 func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareFunc) ServerInterface {
 	return &strictHandler{ssi: ssi, middlewares: middlewares}
@@ -271,13 +266,13 @@ type strictHandler struct {
 }
 
 // GetStatusV1 operation middleware
-func (sh *strictHandler) GetStatusV1(ctx echo.Context, params GetStatusV1Params) error {
+func (sh *strictHandler) GetStatusV1(ctx *fiber.Ctx, params GetStatusV1Params) error {
 	var request GetStatusV1RequestObject
 
 	request.Params = params
 
-	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetStatusV1(ctx.Request().Context(), request.(GetStatusV1RequestObject))
+	handler := func(ctx *fiber.Ctx, request interface{}) (interface{}, error) {
+		return sh.ssi.GetStatusV1(ctx.UserContext(), request.(GetStatusV1RequestObject))
 	}
 	for _, middleware := range sh.middlewares {
 		handler = middleware(handler, "GetStatusV1")
@@ -286,9 +281,11 @@ func (sh *strictHandler) GetStatusV1(ctx echo.Context, params GetStatusV1Params)
 	response, err := handler(ctx, request)
 
 	if err != nil {
-		return err
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	} else if validResponse, ok := response.(GetStatusV1ResponseObject); ok {
-		return validResponse.VisitGetStatusV1Response(ctx.Response())
+		if err := validResponse.VisitGetStatusV1Response(ctx); err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		}
 	} else if response != nil {
 		return fmt.Errorf("Unexpected response type: %T", response)
 	}
@@ -296,17 +293,17 @@ func (sh *strictHandler) GetStatusV1(ctx echo.Context, params GetStatusV1Params)
 }
 
 // SetStatusV1 operation middleware
-func (sh *strictHandler) SetStatusV1(ctx echo.Context) error {
+func (sh *strictHandler) SetStatusV1(ctx *fiber.Ctx) error {
 	var request SetStatusV1RequestObject
 
 	var body SetStatusV1JSONRequestBody
-	if err := ctx.Bind(&body); err != nil {
-		return err
+	if err := ctx.BodyParser(&body); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 	request.Body = &body
 
-	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.SetStatusV1(ctx.Request().Context(), request.(SetStatusV1RequestObject))
+	handler := func(ctx *fiber.Ctx, request interface{}) (interface{}, error) {
+		return sh.ssi.SetStatusV1(ctx.UserContext(), request.(SetStatusV1RequestObject))
 	}
 	for _, middleware := range sh.middlewares {
 		handler = middleware(handler, "SetStatusV1")
@@ -315,9 +312,11 @@ func (sh *strictHandler) SetStatusV1(ctx echo.Context) error {
 	response, err := handler(ctx, request)
 
 	if err != nil {
-		return err
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	} else if validResponse, ok := response.(SetStatusV1ResponseObject); ok {
-		return validResponse.VisitSetStatusV1Response(ctx.Response())
+		if err := validResponse.VisitSetStatusV1Response(ctx); err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		}
 	} else if response != nil {
 		return fmt.Errorf("Unexpected response type: %T", response)
 	}

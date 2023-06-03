@@ -23,10 +23,10 @@ import (
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
-	// (GET /api/v1/status)
+	// (GET /v1/status)
 	GetStatusV1(c *gin.Context, params GetStatusV1Params)
 
-	// (POST /api/v1/status)
+	// (POST /v1/status)
 	SetStatusV1(c *gin.Context)
 }
 
@@ -157,8 +157,8 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		ErrorHandler:       errorHandler,
 	}
 
-	router.GET(options.BaseURL+"/api/v1/status", wrapper.GetStatusV1)
-	router.POST(options.BaseURL+"/api/v1/status", wrapper.SetStatusV1)
+	router.GET(options.BaseURL+"/v1/status", wrapper.GetStatusV1)
+	router.POST(options.BaseURL+"/v1/status", wrapper.SetStatusV1)
 }
 
 type AuthenticationErrorJSONResponse Error
@@ -274,10 +274,10 @@ func (response SetStatusV1403JSONResponse) VisitSetStatusV1Response(w http.Respo
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 
-	// (GET /api/v1/status)
+	// (GET /v1/status)
 	GetStatusV1(ctx context.Context, request GetStatusV1RequestObject) (GetStatusV1ResponseObject, error)
 
-	// (POST /api/v1/status)
+	// (POST /v1/status)
 	SetStatusV1(ctx context.Context, request SetStatusV1RequestObject) (SetStatusV1ResponseObject, error)
 }
 
@@ -357,20 +357,20 @@ func (sh *strictHandler) SetStatusV1(ctx *gin.Context) {
 var swaggerSpec = []string{
 
 	"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",
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

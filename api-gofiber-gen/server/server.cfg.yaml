@@ -1,0 +1,8 @@
+package: server
+generate:
+  fiber-server: true
+  embedded-spec: true
+  strict-server: true
+output: server.gen.go
+output-options:
+  skip-prune: true
