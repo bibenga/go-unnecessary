@@ -16,6 +16,7 @@ import (
 	fiberMiddleware "github.com/deepmap/oapi-codegen/pkg/fiber-middleware"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/rs/zerolog/log"
 )
 
@@ -305,15 +306,28 @@ func (s *ServerImpl) SetStatusV1(c *fiber.Ctx) error {
 }
 
 type StrictServerImpl struct {
+	store *session.Store
 }
 
-func NewStrictServer() StrictServerInterface {
-	return &StrictServerImpl{}
+func NewStrictServer(store *session.Store) StrictServerInterface {
+	return &StrictServerImpl{
+		store: store,
+	}
 }
 
 func (s *StrictServerImpl) GetStatusV1(c context.Context, request GetStatusV1RequestObject) (GetStatusV1ResponseObject, error) {
 	logger := log.Logger.With().
 		Str("mode", "strict").Logger()
+
+	ctx := c.Value("uFiberContext").(*fiber.Ctx)
+	sess, err := s.store.Get(ctx)
+	if err != nil {
+		return nil, err
+	}
+	sess.Set("Olala", "1")
+	if err := sess.Save(); err != nil {
+		return nil, err
+	}
 
 	// в отличии от chi и gin тут в режиме strict доступа к контексту echo не имеется
 	// ec1 := echoMiddleware.GetEchoContext(c)

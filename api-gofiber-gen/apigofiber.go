@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"time"
@@ -14,6 +15,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/rs/zerolog/pkgerrors"
@@ -45,6 +47,11 @@ func main() {
 	log.Info().Msg("Unnecessary1")
 
 	// ------------------------------------------------------------------------------------
+	store := session.New(session.Config{
+		KeyLookup:  "cookie:gofiber_session_id",
+		Expiration: 1 * time.Hour,
+	})
+
 	app := fiber.New()
 	app.Use(recover.New())
 	app.Use(logger.New())
@@ -56,8 +63,18 @@ func main() {
 	api.Use(server.Authenticator())
 	api.Use(server.Validator())
 
-	ssrv2 := server.NewStrictServer()
-	h2 := server.NewStrictHandler(ssrv2, nil)
+	ssrv2 := server.NewStrictServer(store)
+	h2 := server.NewStrictHandler(ssrv2, []server.StrictMiddlewareFunc{
+		func(f server.StrictHandlerFunc, operationID string) server.StrictHandlerFunc {
+			return func(ctx *fiber.Ctx, args interface{}) (interface{}, error) {
+				log.Info().Msg("StrictMiddlewareFunc")
+				c := ctx.UserContext()
+				c = context.WithValue(c, "uFiberContext", ctx)
+				ctx.SetUserContext(c)
+				return f(ctx, args)
+			}
+		},
+	})
 	server.RegisterHandlersWithOptions(api, h2, server.FiberServerOptions{
 		// BaseURL: "/api",
 	})
