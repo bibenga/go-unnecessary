@@ -10,6 +10,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/pgx"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
+	"github.com/spf13/viper"
 	// _ "github.com/golang-migrate/migrate/v4/database/postgres"
 	// _ "github.com/golang-migrate/migrate/v4/database/sqlite"
 )
@@ -58,15 +59,36 @@ func newMigrator(sqlDb *sql.DB) *migrate.Migrate {
 	return migrator
 }
 
+func GetDsn() string {
+	// return "host=host.docker.internal port=5432 user=rds password=sqlsql dbname=go TimeZone=UTC sslmode=disable"
+	return fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s TimeZone=%s sslmode=%s",
+		viper.GetString("DB_POSTGRES_HOST"),
+		viper.GetString("DB_POSTGRES_PORT"),
+		viper.GetString("DB_POSTGRES_USERNAME"),
+		viper.GetString("DB_POSTGRES_PASSWORD"),
+		viper.GetString("DB_POSTGRES_DB"),
+		viper.GetString("DB_POSTGRES_TIMEZONE"),
+		viper.GetString("DB_POSTGRES_SSLMODE"),
+	)
+}
+
 func main() {
 	log.SetFlags(log.Ltime | log.Lshortfile | log.Lmsgprefix)
 	log.SetPrefix("[migrate] ")
 
+	log.Print("Load config")
+	viper.SetConfigName(".env")
+	viper.SetConfigType("env")
+	viper.AddConfigPath(".")
+	if err := viper.ReadInConfig(); err != nil {
+		panic(err)
+	}
+	// log.Printf(" - %+v", viper.Get("DB_POSTGRES_HOST"))
+
 	log.Print("connect to DB")
-	dsn := fmt.Sprintf(
-		"host=%s user=rds password=sqlsql dbname=go port=5432 TimeZone=UTC sslmode=disable",
-		"host.docker.internal",
-	)
+	dsn := GetDsn()
+	log.Printf("[unsecure] dsn is '%s'", dsn)
 
 	// sqlDb, err := sql.Open("postgres", dsn)
 	sqlDb, err := sql.Open("pgx", dsn)

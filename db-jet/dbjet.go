@@ -19,9 +19,11 @@ import (
 	jet "github.com/go-jet/jet/v2/postgres"
 	"github.com/go-jet/jet/v2/qrm"
 
-	m "unnecessary/db-jet/postgres/public/model"
-	t "unnecessary/db-jet/postgres/public/table"
+	m "unnecessary/db-jet/go/public/model"
+	t "unnecessary/db-jet/go/public/table"
 )
+
+const dsn string = "host=host.docker.internal port=5432 user=rds password=sqlsql dbname=go TimeZone=UTC"
 
 func deleteTag(ctx context.Context, q qrm.DB, name string) (int64, error) {
 	log.Printf("delete tag '%s'", name)
@@ -124,7 +126,6 @@ func playWithDbConJet() {
 	// go install github.com/go-jet/jet/v2/cmd/jet@latest
 	log.Printf("playWithDbConJet")
 
-	dsn := "host=db user=postgres password=postgres dbname=postgres port=5432 sslmode=disable TimeZone=UTC"
 	// db, err := sql.Open("postgres", dsn)
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {
@@ -216,7 +217,6 @@ func playWithDbConJet2() {
 	// go install github.com/go-jet/jet/v2/cmd/jet@latest
 	log.Printf("playWithDbConJet")
 
-	dsn := "host=db user=postgres password=postgres dbname=postgres port=5432 sslmode=disable TimeZone=UTC"
 	// db, err := sql.Open("postgres", dsn)
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {

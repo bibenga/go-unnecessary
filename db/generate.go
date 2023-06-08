@@ -13,7 +13,7 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile | log.Lmsgprefix)
 	log.SetPrefix("gorm - ")
 
-	dsn := "host=db user=postgres password=postgres dbname=postgres port=5432 TimeZone=UTC"
+	dsn := "host=host.docker.internal port=5432 user=rds password=sqlsql dbname=go TimeZone=UTC sslmode=disable"
 	db, err := gorm.Open(
 		postgres.New(postgres.Config{
 			DSN: dsn,
