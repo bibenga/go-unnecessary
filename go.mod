@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/deepmap/oapi-codegen v1.13.0
-	github.com/getkin/kin-openapi v0.117.0
+	github.com/getkin/kin-openapi v0.118.0
 	github.com/gin-contrib/logger v0.2.5
 	github.com/gin-contrib/requestid v0.0.6
 	github.com/gin-contrib/secure v0.0.1

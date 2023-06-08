@@ -55,6 +55,8 @@ github.com/gabriel-vasile/mimetype v1.4.2 h1:w5qFW6JKBz9Y393Y4q372O9A7cUSequkh1Q
 github.com/gabriel-vasile/mimetype v1.4.2/go.mod h1:zApsH/mKG4w07erKIaJPFiX0Tsq9BFQgN3qGY5GnNgA=
 github.com/getkin/kin-openapi v0.117.0 h1:QT2DyGujAL09F4NrKDHJGsUoIprlIcFVHWDVDcUFE8A=
 github.com/getkin/kin-openapi v0.117.0/go.mod h1:l5e9PaFUo9fyLJCPGQeXI2ML8c3P8BHOEV2VaAVf/pc=
+github.com/getkin/kin-openapi v0.118.0 h1:z43njxPmJ7TaPpMSCQb7PN0dEYno4tyBPQcrFdHoLuM=
+github.com/getkin/kin-openapi v0.118.0/go.mod h1:l5e9PaFUo9fyLJCPGQeXI2ML8c3P8BHOEV2VaAVf/pc=
 github.com/gin-contrib/logger v0.2.5 h1:nl6dfoCafxNmXkY3JGZvr1+ky+W8mlVz4YRkyh2Mkg0=
 github.com/gin-contrib/logger v0.2.5/go.mod h1:GozUC4j0E1cF+jTjouvD3tHmYmxyg1Wz6LqKYR+D1aM=
 github.com/gin-contrib/requestid v0.0.6 h1:mGcxTnHQ45F6QU5HQRgQUDsAfHprD3P7g2uZ4cSZo9o=

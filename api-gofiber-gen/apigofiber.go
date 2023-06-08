@@ -43,9 +43,6 @@ func main() {
 	stdLog.SetFlags(0)
 	stdLog.SetOutput(stdLogWriter)
 
-	stdLog.Print("Kaka1")
-	log.Info().Msg("Unnecessary1")
-
 	// ------------------------------------------------------------------------------------
 	store := session.New(session.Config{
 		KeyLookup:  "cookie:gofiber_session_id",
