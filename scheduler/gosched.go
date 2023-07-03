@@ -82,7 +82,8 @@ func playQuartz() {
 }
 
 func playGocron() {
-	// не уверен в потокобезопасности
+	// creo que gocron no es hilo seguro
+
 	_l := log.New(log.Default().Writer(), "[gocron] - ", log.Default().Flags())
 
 	_l.Print("> playGocron")
