@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/deepmap/oapi-codegen v1.13.0
 	github.com/getkin/kin-openapi v0.118.0
-	github.com/gin-contrib/logger v0.2.5
+	github.com/gin-contrib/logger v0.2.6
 	github.com/gin-contrib/requestid v0.0.6
 	github.com/gin-contrib/secure v0.0.1
 	github.com/gin-contrib/sessions v0.0.5
@@ -27,16 +27,16 @@ require (
 	github.com/redis/go-redis/v9 v9.0.5
 	github.com/reugn/go-quartz v0.7.0
 	github.com/rs/zerolog v1.29.1
-	github.com/segmentio/kafka-go v0.4.40
+	github.com/segmentio/kafka-go v0.4.42
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
 	github.com/theplant/htmlgo v1.0.3
 	go.uber.org/zap v1.24.0
-	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df
-	golang.org/x/net v0.11.0
+	golang.org/x/exp v0.0.0-20230711023510-fffb14384f22
+	golang.org/x/net v0.12.0
 	gorm.io/datatypes v1.2.0
 	gorm.io/driver/postgres v1.5.2
-	gorm.io/gen v0.3.22
+	gorm.io/gen v0.3.23
 	gorm.io/gorm v1.25.2
 	gorm.io/plugin/dbresolver v1.4.1
 )
@@ -124,12 +124,12 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.4.0 // indirect
-	golang.org/x/crypto v0.10.0 // indirect
+	golang.org/x/crypto v0.11.0 // indirect
 	golang.org/x/mod v0.12.0 // indirect
 	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
-	golang.org/x/tools v0.10.0 // indirect
+	golang.org/x/tools v0.11.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
