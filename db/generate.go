@@ -77,12 +77,12 @@ func main() {
 		// gen.FieldGenType("deleted_ts", "gorm.DeletedAt"),
 		gen.FieldRelate(field.BelongsTo, "DictPlatform", dict_platform,
 			&field.RelateConfig{
-				GORMTag:       field.GormTag{"foreignKey": "DictPlatformID"},
+				GORMTag:       field.GormTag{"foreignKey": {"DictPlatformID"}},
 				RelatePointer: true,
 			}),
 		gen.FieldRelate(field.Many2Many, "Tags", tag,
 			&field.RelateConfig{
-				GORMTag:            field.GormTag{"many2many": "application_tag"},
+				GORMTag:            field.GormTag{"many2many": {"application_tag"}},
 				RelateSlicePointer: true,
 			}),
 	)
@@ -92,13 +92,13 @@ func main() {
 		gen.FieldRelate(field.BelongsTo, "Application", application,
 			&field.RelateConfig{
 				// GORMTag:       "foreignKey:ApplicationID",
-				GORMTag:       field.GormTag{"foreignKey": "ApplicationID"},
+				GORMTag:       field.GormTag{"foreignKey": {"ApplicationID"}},
 				RelatePointer: true,
 			}),
 		gen.FieldRelate(field.BelongsTo, "Tag", tag,
 			&field.RelateConfig{
 				// GORMTag:       "foreignKey:TagID",
-				GORMTag:       field.GormTag{"foreignKey": "TagID"},
+				GORMTag:       field.GormTag{"foreignKey": {"TagID"}},
 				RelatePointer: true,
 			}),
 	)
