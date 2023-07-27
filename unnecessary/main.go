@@ -15,7 +15,7 @@ import (
 var page2Count uint64 = 0
 
 func page2(w http.ResponseWriter, r *http.Request) {
-	page, err := u.NewWicketPage("html/page2.html")
+	page, err := u.NewPage("html/page2.html")
 	if err != nil {
 		panic(err)
 	}

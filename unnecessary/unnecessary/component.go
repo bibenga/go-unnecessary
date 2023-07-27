@@ -25,7 +25,7 @@ type Component struct {
 	counter              int // page level property
 }
 
-func NewWicketPage(file string) (*Component, error) {
+func NewPage(file string) (*Component, error) {
 	doc, err := ParseHtmlFile(file)
 	if err != nil {
 		return nil, err
