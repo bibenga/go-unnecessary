@@ -20,6 +20,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.48.0
 	github.com/golang-migrate/migrate/v4 v4.16.2
 	github.com/google/uuid v1.3.0
+	github.com/gorilla/mux v1.8.0
 	github.com/jackc/pgx/v5 v5.4.2
 	github.com/labstack/echo/v4 v4.11.1
 	github.com/lib/pq v1.10.9
@@ -79,7 +80,6 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.2.5 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
 	github.com/gorilla/context v1.1.1 // indirect
-	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/gorilla/securecookie v1.1.1 // indirect
 	github.com/gorilla/sessions v1.2.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
