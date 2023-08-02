@@ -21,10 +21,10 @@ import (
 	"github.com/getkin/kin-openapi/openapi3filter"
 )
 
-func NewValidator() (func(http.Handler) http.Handler, error) {
+func NewValidator() func(http.Handler) http.Handler {
 	spec, err := GetSwagger()
 	if err != nil {
-		return nil, fmt.Errorf("loading spec: %w", err)
+		panic(fmt.Errorf("loading spec: %w", err))
 	}
 
 	validator := chiMiddleware.OapiRequestValidatorWithOptions(spec, &chiMiddleware.Options{
@@ -47,7 +47,7 @@ func NewValidator() (func(http.Handler) http.Handler, error) {
 			},
 		},
 	})
-	return validator, nil
+	return validator
 }
 
 func Authenticator0(next http.Handler) http.Handler {

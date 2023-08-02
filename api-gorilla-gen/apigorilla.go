@@ -20,15 +20,9 @@ func main() {
 	fs := http.FileServer(http.Dir("api"))
 	r.PathPrefix("/docs2").Handler(http.StripPrefix("/docs2/", fs))
 
+	r.Use(server.NewValidator())
+
 	api := server.NewServer()
-	// r.Handle("/", server.HandlerWithOptions(api, server.GorillaServerOptions{
-	// 	BaseURL: "/api",
-	// 	// BaseRouter: r,
-	// 	Middlewares: []server.MiddlewareFunc{
-	// 		server.Authenticator,
-	// 		// validator,
-	// 	},
-	// }))
 	server.HandlerFromMuxWithBaseURL(api, r, "/api")
 
 	srv := &http.Server{
