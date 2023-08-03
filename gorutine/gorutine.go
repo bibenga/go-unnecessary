@@ -1,7 +1,5 @@
 package main
 
-// https://github.com/golang-migrate/migrate/blob/master/database/postgres/TUTORIAL.md
-
 import (
 	"log"
 	"time"

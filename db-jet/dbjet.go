@@ -1,6 +1,6 @@
 package main
 
-// https://github.com/golang-migrate/migrate/blob/master/database/postgres/TUTORIAL.md
+// go install github.com/go-jet/jet/v2/cmd/jet@latest
 
 //go:generate jet -dsn=postgresql://postgres:postgres@db:5432/postgres?sslmode=disable -path=./ -ignore-tables schema_migrations
 

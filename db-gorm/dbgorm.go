@@ -1,7 +1,5 @@
 package main
 
-// https://github.com/golang-migrate/migrate/blob/master/database/postgres/TUTORIAL.md
-
 import (
 	"database/sql"
 	"errors"
@@ -225,7 +223,7 @@ func playWithSqlModels(db *gorm.DB) {
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile | log.Lmsgprefix)
-	log.SetPrefix("jet - ")
+	log.SetPrefix("")
 
 	db := initGorm()
 	// playWithSomeModels(db)
