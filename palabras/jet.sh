@@ -2,6 +2,6 @@
 
 jet -source sqlite \
     -dsn palabras.db \
-    -path palabras \
+    -path ./palabras/gen \
     -schema pl \
     -ignore-tables schema_migrations 

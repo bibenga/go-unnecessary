@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	firebase.google.com/go v3.13.0+incompatible
-	github.com/deepmap/oapi-codegen v1.13.3
+	github.com/deepmap/oapi-codegen v1.13.4
 	github.com/getkin/kin-openapi v0.118.0
 	github.com/gin-contrib/logger v0.2.6
 	github.com/gin-contrib/requestid v0.0.6
@@ -17,14 +17,14 @@ require (
 	github.com/go-chi/render v1.0.3
 	github.com/go-co-op/gocron v1.31.0
 	github.com/go-jet/jet/v2 v2.10.1
-	github.com/go-playground/validator/v10 v10.14.1
+	github.com/go-playground/validator/v10 v10.15.0
 	github.com/gofiber/fiber/v2 v2.48.0
 	github.com/golang-migrate/migrate/v4 v4.16.2
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/gosimple/slug v1.13.1
-	github.com/jackc/pgx/v5 v5.4.2
+	github.com/jackc/pgx/v5 v5.4.3
 	github.com/labstack/echo/v4 v4.11.1
 	github.com/lib/pq v1.10.9
 	github.com/qor5/web v1.2.4
@@ -37,9 +37,9 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/theplant/htmlgo v1.0.3
 	go.uber.org/zap v1.25.0
-	golang.org/x/exp v0.0.0-20230801115018-d63ba01acd4b
-	golang.org/x/net v0.13.0
-	google.golang.org/api v0.134.0
+	golang.org/x/exp v0.0.0-20230807204917-050eac23e9de
+	golang.org/x/net v0.14.0
+	google.golang.org/api v0.135.0
 	gorm.io/datatypes v1.2.0
 	gorm.io/driver/postgres v1.5.2
 	gorm.io/gen v0.3.23
@@ -145,27 +145,27 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.4.0 // indirect
-	golang.org/x/crypto v0.11.0 // indirect
+	golang.org/x/crypto v0.12.0 // indirect
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/oauth2 v0.10.0 // indirect
+	golang.org/x/oauth2 v0.11.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/sys v0.10.0 // indirect
-	golang.org/x/text v0.11.0 // indirect
+	golang.org/x/sys v0.11.0 // indirect
+	golang.org/x/text v0.12.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
-	golang.org/x/tools v0.11.1 // indirect
+	golang.org/x/tools v0.12.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20230803162519-f966b187b2e5 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20230803162519-f966b187b2e5 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20230803162519-f966b187b2e5 // indirect
+	google.golang.org/genproto v0.0.0-20230807174057-1744710a1577 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20230807174057-1744710a1577 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230807174057-1744710a1577 // indirect
 	google.golang.org/grpc v1.57.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/mysql v1.5.1 // indirect
 	gorm.io/hints v1.1.2 // indirect
-	modernc.org/libc v1.22.5 // indirect
-	modernc.org/mathutil v1.5.0 // indirect
-	modernc.org/memory v1.5.0 // indirect
-	modernc.org/sqlite v1.23.1 // indirect
+	modernc.org/libc v1.24.1 // indirect
+	modernc.org/mathutil v1.6.0 // indirect
+	modernc.org/memory v1.6.0 // indirect
+	modernc.org/sqlite v1.25.0 // indirect
 )

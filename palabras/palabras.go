@@ -3,7 +3,7 @@ package main
 //go:generate jet -source=sqlite -dsn=../palabras.db -schema=palabras -path=./
 
 import (
-	"errors"
+	"flag"
 	"log"
 	"os"
 	"time"
@@ -42,33 +42,28 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile | log.Lmsgprefix)
 	log.SetPrefix("")
 
+	isMigrate := flag.Bool("migrate", false, "migrate db")
+	flag.Parse()
+
 	db := initGorm("palabras.db")
 	log.Printf("db: %v", db)
 
-	db.AutoMigrate(&models.User{})
+	log.Printf("migrate is %v", *isMigrate)
+	// if *isMigrate {
+	db.AutoMigrate(&models.User{}, &models.TextPair{}, &models.StudyState{})
+	// }
 
 	err := db.Transaction(func(tx *gorm.DB) error {
 		var user models.User
-		result := tx.Model(&models.User{}).Where(
-			// "DictPlatformID = ? AND Name ILIKE ?",
-			"lower(email) = lower(?)",
-			"user1",
-		).Take(&user)
-		if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		result := tx.
+			Where("lower(email) = lower(?)", "user1").
+			Attrs(models.User{Email: "user1"}).
+			FirstOrCreate(&user)
+		if result.Error != nil {
 			return result.Error
 		}
-		if result.RowsAffected == 1 {
-			log.Printf("user was founded: %v", user)
-		} else {
-			user = models.User{
-				Email: "user1",
-			}
-			result = tx.Create(&user)
-			if result.Error != nil {
-				return result.Error
-			}
-			log.Printf("user was created: %v", user)
-		}
+		created := result.RowsAffected == 1
+		log.Printf("user was created or fetched: created=%+v, user=%+v", created, user)
 		return nil
 	})
 	if err != nil {
