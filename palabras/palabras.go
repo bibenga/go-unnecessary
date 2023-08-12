@@ -50,6 +50,7 @@ func main() {
 
 	log.Printf("migrate is %v", *isMigrate)
 	// if *isMigrate {
+	// we need verify exist or not tables...
 	db.AutoMigrate(&models.User{}, &models.TextPair{}, &models.StudyState{})
 	// }
 

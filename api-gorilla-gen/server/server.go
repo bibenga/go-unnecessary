@@ -175,15 +175,15 @@ func (s *ServerImpl) SetStatusV1(w http.ResponseWriter, r *http.Request) {
 	var status GetStatusV1
 
 	if err := json.NewDecoder(r.Body).Decode(&status); err != nil {
-		log.Print("invalid json: %v", err)
+		log.Printf("invalid json: %v", err)
 		w.WriteHeader(400)
 		return
 	}
 
-	log.Print("GetStatusV1 > %v", status)
+	log.Printf("GetStatusV1 > %v", status)
 	status.Status = "Ok or Not"
 
-	log.Print("GetStatusV1 < %v", status)
+	log.Printf("GetStatusV1 < %v", status)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
