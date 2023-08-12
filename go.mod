@@ -27,6 +27,7 @@ require (
 	github.com/jackc/pgx/v5 v5.4.3
 	github.com/labstack/echo/v4 v4.11.1
 	github.com/lib/pq v1.10.9
+	github.com/mozillazg/go-unidecode v0.2.0
 	github.com/qor5/web v1.2.4
 	github.com/rabbitmq/amqp091-go v1.8.1
 	github.com/redis/go-redis/v9 v9.0.5

@@ -1,0 +1,35 @@
+package models
+
+import (
+	"regexp"
+	"strings"
+
+	"github.com/mozillazg/go-unidecode"
+)
+
+func FilterEmptyString(items []string) []string {
+	var res []string
+	for _, item := range items {
+		item = strings.Trim(item, " ")
+		if item != "" {
+			res = append(res, item)
+		}
+	}
+	return res
+}
+
+func SplitLines(text string) []string {
+	linesRe := regexp.MustCompile("[\n\r]+")
+	lines := linesRe.Split(text, -1)
+	return FilterEmptyString(lines)
+}
+
+func SplitWords(line string) []string {
+	wordsRe := regexp.MustCompile("[ \r\n¡!¿?.,:;'\"]+")
+	words := wordsRe.Split(line, -1)
+	return FilterEmptyString(words)
+}
+
+func Unidecode(src string) string {
+	return unidecode.Unidecode(src)
+}
