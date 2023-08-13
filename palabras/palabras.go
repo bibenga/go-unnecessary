@@ -42,7 +42,7 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile | log.Lmsgprefix)
 	log.SetPrefix("")
 
-	isMigrationDisabled := flag.Bool("no-migrate", false, "disable of db migration by gorm")
+	isMigrationDisabled := flag.Bool("no-migrate", false, "disable db migration with gorm")
 	flag.Parse()
 	log.Printf("should we migrate a db: %v", !*isMigrationDisabled)
 
