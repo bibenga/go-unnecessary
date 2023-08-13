@@ -42,17 +42,16 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile | log.Lmsgprefix)
 	log.SetPrefix("")
 
-	isMigrate := flag.Bool("migrate", false, "migrate db")
+	isMigrationDisabled := flag.Bool("no-migrate", false, "disable of db migration by gorm")
 	flag.Parse()
+	log.Printf("should we migrate a db: %v", !*isMigrationDisabled)
 
 	db := initGorm("palabras.db")
 	log.Printf("db: %v", db)
 
-	log.Printf("migrate is %v", *isMigrate)
-	// if *isMigrate {
-	// we need verify exist or not tables...
-	db.AutoMigrate(&models.User{}, &models.TextPair{}, &models.StudyState{})
-	// }
+	if !*isMigrationDisabled {
+		db.AutoMigrate(&models.User{}, &models.TextPair{}, &models.StudyState{})
+	}
 
 	err := db.Transaction(func(tx *gorm.DB) error {
 		var user models.User

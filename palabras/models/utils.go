@@ -21,7 +21,6 @@ func FilterEmptyString(items []string) []string {
 var linesRe = regexp.MustCompile("[\n\r]+")
 
 func SplitLines(text string) []string {
-	// linesRe := regexp.MustCompile("[\n\r]+")
 	lines := linesRe.Split(text, -1)
 	return FilterEmptyString(lines)
 }
@@ -29,7 +28,6 @@ func SplitLines(text string) []string {
 var wordsRe = regexp.MustCompile("[ \r\n¡!¿?.,:;'\"]+")
 
 func SplitWords(line string) []string {
-	// wordsRe := regexp.MustCompile("[ \r\n¡!¿?.,:;'\"]+")
 	words := wordsRe.Split(line, -1)
 	return FilterEmptyString(words)
 }
