@@ -8,6 +8,8 @@
 		"--name",
 		"go_unnecessary"
 	],
+	"postCreateCommand": "sudo apt-get update && sudo apt-get -y install --no-install-recommends sqlite3",
+
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
