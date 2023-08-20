@@ -19,9 +19,8 @@ func playStdLog() {
 	log.SetPrefix("")
 	log.Printf("------------")
 	log.Printf("playStdLog: %v", 1)
-	// log.Printf("playStdLog: %v", 2, 61.1, "olala")
 
-	slog.Info("slog", "count", 3, slog.Group("request", "method", "GET", "status", 400))
+	slog.Info("message from slog", "count", 3, slog.Group("request", "method", "GET", "status", 400))
 }
 
 func playZerolog() {
