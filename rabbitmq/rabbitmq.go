@@ -4,6 +4,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -21,20 +22,20 @@ func main() {
 	rlog := log.New(log.Default().Writer(), "rabbitmq - ", log.Default().Flags())
 	amqp.SetLogger(rlog)
 
-	log.Print("is connecting...")
+	log.Print("try to connect")
 	conn, err := amqp.Dial("amqp://admin:admin@rabbitmq:5672/")
 	failOnError(err, "failed to connect to RabbitMQ")
 	defer conn.Close()
-	log.Print("is connected")
+	log.Print("the connection was established")
 
-	log.Print("is opening channel...")
+	log.Print("try to open a channel...")
 	ch, err := conn.Channel()
 	failOnError(err, "Failed to open a channel")
 	defer ch.Close()
 	ch.Qos(1, 1024*1024, false)
-	log.Print("channel opened")
+	log.Print("the channel was opened")
 
-	log.Print("will be declared queue...")
+	log.Print("try to declare a queue...")
 	q, err := ch.QueueDeclare(
 		"q1",  // name
 		false, // durable
@@ -44,9 +45,9 @@ func main() {
 		nil,   // arguments
 	)
 	failOnError(err, "failed to declare a queue")
-	log.Print("queue was declared...")
+	log.Print("the queue was created or updated...")
 
-	log.Print("will be consumed...")
+	log.Print("try to consume...")
 	messages, err := ch.Consume(
 		q.Name, // queue
 		"",     // consumer
@@ -57,39 +58,53 @@ func main() {
 		nil,    // args
 	)
 	failOnError(err, "failed to register a consumer")
-	log.Print("was consumed")
+	log.Print("the consumer was connected")
 
 	errors := conn.NotifyClose(make(chan *amqp.Error))
 
-	// forever := make(chan int)
-	// go func() {
-	// 	log.Print("waiting errors...")
-	// 	for err := range errors {
-	// 		log.Printf("error received: %+v", err)
-	// 		forever <- 1
-	// 	}
-	// }()
-	// go func() {
-	// 	log.Print("waiting messages...")
-	// 	for d := range msgs {
-	// 		log.Printf("received a message: %+v", d)
-	// 	}
-	// 	log.Print("stop processing messages...")
-	// }()
-	// log.Printf("waiting for messages. To exit press CTRL+C")
-	// <-forever
-	// log.Printf("Exit")
+	log.Printf("the program is waiting for messages. To exit press CTRL+C")
+	stop := time.NewTimer(5 * time.Second)
+	defer stop.Stop()
 
-	log.Printf("waiting for messages. To exit press CTRL+C")
-out:
+	err = process(messages, errors, stop)
+	failOnError(err, "failed on process messages")
+
+	stop.Stop()
+
+	// out:
+	// 	for {
+	// 		select {
+	// 		case message := <-messages:
+	// 			log.Printf("received a message: %+v", message)
+	// 		case err := <-errors:
+	// 			log.Printf("error received: %+v", err)
+	// 			break out
+	// 		}
+	// 	}
+	log.Printf("Exit")
+}
+
+func process(messages <-chan amqp.Delivery, errors chan *amqp.Error, stop *time.Timer) error {
+	// message loop
 	for {
 		select {
 		case message := <-messages:
-			log.Printf("received a message: %+v", message)
+			err := processOne(&message)
+			if err != nil {
+				return err
+			}
+		case <-stop.C:
+			log.Printf("exit by timer")
+			return nil
 		case err := <-errors:
 			log.Printf("error received: %+v", err)
-			break out
+			return err
 		}
 	}
-	log.Printf("Exit")
+}
+
+func processOne(message *amqp.Delivery) error {
+	// process concrete message
+	log.Printf("received a message: %+v", message)
+	return nil
 }
