@@ -2,13 +2,13 @@ package main
 
 import (
 	"log"
+	"log/slog"
 	"os"
 	"time"
 
 	"github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
 	"github.com/rs/zerolog/pkgerrors"
-	"golang.org/x/exp/slog"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

@@ -40,7 +40,6 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/theplant/htmlgo v1.0.3
 	go.uber.org/zap v1.25.0
-	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
 	golang.org/x/net v0.14.0
 	google.golang.org/api v0.138.0
 	gorm.io/datatypes v1.2.0
