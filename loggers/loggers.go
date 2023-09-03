@@ -20,7 +20,11 @@ func playStdLog() {
 	log.Printf("------------")
 	log.Printf("playStdLog: %v", 1)
 
-	slog.Info("message from slog", "count", 3, slog.Group("request", "method", "GET", "status", 400))
+	l := slog.New(slog.Default().Handler()).With(slog.String("func", "playStdLog"))
+	l.Info("message from slog",
+		slog.Int("count", 3),
+		slog.Group("request", slog.String("method", "GET"), slog.Int("status", 400)),
+	)
 }
 
 func playZerolog() {
