@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/unrolled/secure"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -40,6 +41,11 @@ func main() {
 	stdLog.SetOutput(stdLogWriter)
 
 	// ------------------------------------------------------------------------------------
+
+	secureMiddleware := secure.New(secure.Options{
+		SSLRedirect: false,
+	})
+
 	// github.com/go-chi/chi
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
@@ -50,6 +56,7 @@ func main() {
 	}))
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.RealIP)
+	router.Use(secureMiddleware.Handler)
 	router.Use(middleware.NoCache)
 	router.Use(middleware.Heartbeat("/ping"))
 
