@@ -36,5 +36,8 @@ func main() {
 		return
 	}
 
-	l.Info("json parsed", "data", a)
+	l.Info("data", "json", a)
+
+	am := a["meta"].(map[string]interface{})
+	l.Info("raw", "meta.source", am["source"])
 }
