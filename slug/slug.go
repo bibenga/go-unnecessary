@@ -11,9 +11,11 @@ func main() {
 	log.SetPrefix("")
 
 	examples := []string{
-		"Español",
-		"Más",
-		"Надежда",
+		"надежда",
+		"fe",
+		"love",
+		"español",
+		"más o menos",
 	}
 
 	for _, example := range examples {
