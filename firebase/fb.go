@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"log/slog"
 
 	firebase "firebase.google.com/go"
 	"google.golang.org/api/iterator"
@@ -19,28 +20,30 @@ func main() {
 	conf := &firebase.Config{
 		DatabaseURL: "https://aprende-palabras-b61c4.firebaseio.com",
 	}
+	slog.Info("try connect to google", "DatabaseURL", conf.DatabaseURL)
 
 	app, err := firebase.NewApp(ctx, conf, opt)
 	if err != nil {
-		log.Fatalf("error initializing app: %v", err)
+		slog.Error("error initializing app", "error", err)
+		panic(err)
 	}
 
 	db, err := app.Firestore(ctx)
 	if err != nil {
-		log.Fatalf("Error initializing database client: %v", err)
+		slog.Error("Error initializing database client", "error", err)
 	}
 	defer db.Close()
-	log.Print(db)
+	slog.Info("connected", "db", db)
 
-	words := db.Collection("words").Documents(ctx)
+	words := db.Collection("words").Limit(5).Documents(ctx)
 	for {
 		doc, err := words.Next()
 		if err == iterator.Done {
 			break
 		}
 		if err != nil {
-			log.Fatalf("Failed to iterate: %v", err)
+			slog.Error("Failed to iterate", "error", err)
 		}
-		log.Println(doc.Data())
+		log.Println("row", "data", doc.Data())
 	}
 }
