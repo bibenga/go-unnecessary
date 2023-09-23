@@ -4,8 +4,9 @@
 package server
 
 const (
-	ApiKeyAuthScopes = "ApiKeyAuth.Scopes"
-	BasicAuthScopes  = "BasicAuth.Scopes"
+	ApiKeyAuthScopes   = "ApiKeyAuth.Scopes"
+	BasicAuthScopes    = "BasicAuth.Scopes"
+	FirebaseAuthScopes = "FirebaseAuth.Scopes"
 )
 
 // Application defines model for Application.

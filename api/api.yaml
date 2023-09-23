@@ -76,6 +76,7 @@ paths:
       security:
         - BasicAuth: []
         - ApiKeyAuth: []
+        - FirebaseAuth: []
       requestBody:
         required: true
         content:
@@ -107,6 +108,10 @@ components:
     BasicAuth:
       type: http
       scheme: basic
+    FirebaseAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
 
   responses:
     BadRequest:
