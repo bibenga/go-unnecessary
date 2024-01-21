@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-co-op/gocron"
+	"github.com/reugn/go-quartz/job"
 	"github.com/reugn/go-quartz/quartz"
 )
 
@@ -58,23 +59,25 @@ func playQuartz() {
 	if err != nil {
 		_l.Panic(err)
 	}
-	job := quartz.NewFunctionJobWithDesc("Check appiations", func(_ context.Context) (int, error) {
+	fjob := job.NewFunctionJobWithDesc("Check appiations", func(_ context.Context) (int, error) {
 		_l.Print("Tik")
 		// panic(errors.New("die!"))
 		return 1, nil
 	})
-	err = sched.ScheduleJob(ctx, job, triger)
+	// err = sched.ScheduleJob(fjob, triger)
+	djob := quartz.NewJobDetail(fjob, quartz.NewJobKey("functionJob"))
+	err = sched.ScheduleJob(djob, triger)
 	if err != nil {
 		_l.Panic(err)
 	}
-	_l.Printf("scheduled job: %v - %v", job.Key(), job.Description())
+	_l.Printf("scheduled job: %v - %v", djob.JobKey(), fjob.Description())
 
 	_l.Print(">>>>>")
 	time.Sleep(time.Second * 5)
 	_l.Print("<<<<<")
 
-	_l.Printf("cancel job: %v", job.Key())
-	sched.DeleteJob(job.Key())
+	_l.Printf("cancel job: %v", djob.JobKey())
+	sched.DeleteJob(djob.JobKey())
 
 	sched.Stop()
 	sched.Wait(ctx)
