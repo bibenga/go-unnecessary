@@ -52,7 +52,7 @@ func main() {
 	}))
 
 	storage := memory.New()
-	store := session.New(session.Config{
+	sessions := session.New(session.Config{
 		KeyLookup:      "cookie:session",
 		CookieSecure:   false,
 		CookieHTTPOnly: true,
@@ -61,14 +61,19 @@ func main() {
 
 	app.Static("/static", "old-school-web-gofiber/static")
 
+	app.Use(func(c *fiber.Ctx) error {
+		return c.Next()
+	})
+
 	app.Get("/", func(c *fiber.Ctx) error {
-		session, err := store.Get(c)
+		session, err := sessions.Get(c)
 		if err != nil {
 			return err
 		}
-		if err := session.Save(); err != nil {
-			return err
-		}
+		defer session.Save()
+		// if err := session.Save(); err != nil {
+		// 	return err
+		// }
 		return c.Render("index", fiber.Map{}, "layout")
 	})
 

@@ -9,34 +9,39 @@ import (
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 )
 
-func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	// session, err := store.Get(r, "session-name")
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// if session.Save(r, w) != nil {
-	// 	panic(err)
-	// }
-	tmpl := template.Must(template.ParseFiles(
-		"old-school-web-gorilla/templates/layout.html",
-		"old-school-web-gorilla/templates/index.html",
-	))
-	tmpl.ExecuteTemplate(w, "base", nil)
-}
-
 func main() {
+	store := sessions.NewCookieStore([]byte("32-byte-long-auth-key"))
+
 	r := mux.NewRouter()
 	r.Use(handlers.RecoveryHandler())
 
 	fs := http.FileServer(http.Dir("old-school-web-gorilla/static"))
 	r.PathPrefix("/static").Handler(http.StripPrefix("/static/", fs))
 
-	r.HandleFunc("/", IndexHandler)
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		session, err := store.Get(r, "_gorilla_session")
+		if err != nil {
+			panic(err)
+		}
+		// fmt.Printf("ID=%v, IsNew=%v\n", session.ID, session.IsNew)
+		session.Values["foo"] = "bar"
+		if err := session.Save(r, w); err != nil {
+			panic(err)
+		}
+
+		tmpl := template.Must(template.ParseFiles(
+			"old-school-web-gorilla/templates/layout.html",
+			"old-school-web-gorilla/templates/index.html",
+		))
+		if err := tmpl.ExecuteTemplate(w, "base", nil); err != nil {
+			panic(err)
+		}
+	})
 
 	CSRF := csrf.Protect([]byte("32-byte-long-auth-key"))
-	// store := sessions.NewCookieStore([]byte("32-byte-long-auth-key"))
 
 	srv := &http.Server{
 		Handler: handlers.LoggingHandler(
