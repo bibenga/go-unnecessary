@@ -6,11 +6,19 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/csrf"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
+	// session, err := store.Get(r, "session-name")
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// if session.Save(r, w) != nil {
+	// 	panic(err)
+	// }
 	tmpl := template.Must(template.ParseFiles(
 		"old-school-web-gorilla/templates/layout.html",
 		"old-school-web-gorilla/templates/index.html",
@@ -26,10 +34,15 @@ func main() {
 	r.PathPrefix("/static").Handler(http.StripPrefix("/static/", fs))
 
 	r.HandleFunc("/", IndexHandler)
-	http.Handle("/", r)
+
+	CSRF := csrf.Protect([]byte("32-byte-long-auth-key"))
+	// store := sessions.NewCookieStore([]byte("32-byte-long-auth-key"))
 
 	srv := &http.Server{
-		Handler:      handlers.LoggingHandler(log.Writer(), r),
+		Handler: handlers.LoggingHandler(
+			log.Writer(),
+			CSRF(r),
+		),
 		Addr:         "0.0.0.0:8000",
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
