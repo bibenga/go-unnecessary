@@ -21,7 +21,13 @@ func playStdLog() {
 	log.Printf("playStdLog: %v", 1)
 
 	l := slog.New(slog.Default().Handler()).With(slog.String("func", "playStdLog"))
-	l.Info("message from slog",
+	l.Info("message as text",
+		slog.Int("count", 3),
+		slog.Group("request", slog.String("method", "GET"), slog.Int("status", 400)),
+	)
+
+	l = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{AddSource: true}))
+	l.Info("message as json",
 		slog.Int("count", 3),
 		slog.Group("request", slog.String("method", "GET"), slog.Int("status", 400)),
 	)
