@@ -20,13 +20,16 @@ func playStdLog() {
 	log.Printf("------------")
 	log.Printf("playStdLog: %v", 1)
 
-	l := slog.New(slog.Default().Handler()).With(slog.String("func", "playStdLog"))
+	l := slog.New(slog.Default().Handler()).With(slog.String("app", "go-unnecessary"))
 	l.Info("message as text",
 		slog.Int("count", 3),
 		slog.Group("request", slog.String("method", "GET"), slog.Int("status", 400)),
 	)
 
-	l = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{AddSource: true}))
+	l = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{AddSource: true})).With(
+		slog.String("app", "go-unnecessary"),
+		slog.String("mode", "development"),
+	)
 	l.Info("message as json",
 		slog.Int("count", 3),
 		slog.Group("request", slog.String("method", "GET"), slog.Int("status", 400)),
@@ -84,7 +87,7 @@ func playZap() {
 	logger.Info("playZap 1", zap.Float64("float", 62.1), zap.String("aaaa", "cccc"))
 	logger.Sugar().Infow("playZap 23", "float", 62.1, "aaaa", "cccc")
 	logger.Sugar().Infof("playZap %v", 21, zap.Float64("float", 62.1), zap.String("aaaa", "cccc"))
-	logger.Sugar().Infof("playZap %v", 22, 62.1, "cccc")
+	logger.Sugar().Infof("playZap %v", 22, "cccc", 62.1)
 	log.Printf("playZap %v", 3)
 }
 
