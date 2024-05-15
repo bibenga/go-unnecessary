@@ -1,0 +1,9 @@
+package: server
+generate:
+  # doesn't work with v2.1.0
+  std-http-server: true
+  embedded-spec: true
+  strict-server: true
+output: server.gen.go
+output-options:
+  skip-prune: true
