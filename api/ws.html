@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Olala</title>
+</head>
+
+<body>
+    <h1>Olala</h1>
+    <script type="module">
+        var ws = new WebSocket("ws://127.0.0.1:8000/ws");
+        ws.addEventListener("open", () => {
+            console.log("open");
+        });
+        ws.addEventListener("message", (event) => {
+            console.log(event);
+        });
+        ws.addEventListener("error", () => {
+            console.log("socket error");
+        });
+        ws.addEventListener("close", () => {
+            console.log("socket close");
+        });
+    </script>
+</body>
+
+</html>
