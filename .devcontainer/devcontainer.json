@@ -10,11 +10,12 @@
 	],
 	"postCreateCommand": "sudo apt-get -y update && sudo apt-get -y upgrade && sudo apt-get -y install --no-install-recommends sqlite3",
 	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {
-	// 	"ghcr.io/devcontainers/features/node:1": {
-	// 		"version": "latest"
-	// 	}
-	// },
+    "features": {
+        "ghcr.io/devcontainers/features/node:1": {}
+        // "ghcr.io/devcontainers/features/desktop-lite:1": {
+        //     "password": "olala123"
+        // }
+    },
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [],
 	"customizations": {
