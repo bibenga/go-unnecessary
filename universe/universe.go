@@ -14,12 +14,10 @@ func NextId() uint64 {
 }
 
 type IObject interface {
-	String() string
 	GetId() uint64
 	SetUniverse(*Universe)
 	GetUniverse() *Universe
 	ProcessPhysics()
-	// Point() Point
 }
 
 // type IUniverseObject interface {

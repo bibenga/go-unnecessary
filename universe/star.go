@@ -5,15 +5,9 @@ import (
 	"log/slog"
 )
 
-type IStar interface {
-	IObject
-	Add(IStarObject)
-}
-
 type IStarObject interface {
-	IObject
-	SetStar(IStar)
-	GetStar() IStar
+	SetStar(*Star)
+	GetStar() *Star
 }
 
 type Star struct {
