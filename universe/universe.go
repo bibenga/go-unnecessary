@@ -86,22 +86,22 @@ type IObject interface {
 // }
 
 type Universe struct {
-	id      uint64
-	name    string
-	rect    Rect
-	objects []IObject
-	// objects map[uint64]IObject
-	tik int
+	id            uint64
+	name          string
+	rect          Rect
+	objects       []IObject
+	tik           int
+	simulationTik chan *Universe
 }
 
 func NewUniverse(rect Rect) *Universe {
 	id := NextId()
 	universe := Universe{
-		id:   id,
-		name: fmt.Sprintf("Universe-%d", id),
-		rect: rect,
-		// objects: make(map[uint64]IObject),
-		objects: []IObject{},
+		id:            id,
+		name:          fmt.Sprintf("Universe-%d", id),
+		rect:          rect,
+		objects:       []IObject{},
+		simulationTik: make(chan *Universe),
 	}
 	slog.Info("the universe is created", slog.Uint64("universe", universe.id), "rect", rect)
 	return &universe
@@ -117,6 +117,10 @@ func (universe *Universe) GetId() uint64 {
 
 func (universe *Universe) Rect() *Rect {
 	return &universe.rect
+}
+
+func (universe *Universe) SimulationTik() chan *Universe {
+	return universe.simulationTik
 }
 
 func (universe *Universe) Add(obj IObject) {
@@ -155,6 +159,7 @@ func (universe *Universe) Del(obj IObject) {
 func (universe *Universe) ProcessPhysics() {
 	slog.Info("=========================")
 	universe.tik += 1
+	universe.simulationTik <- universe
 	slog.Info("ProcessPhysics", "universe", universe.id, "tik", universe.tik)
 	for _, obj := range universe.objects {
 		obj.ProcessPhysics()

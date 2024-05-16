@@ -18,6 +18,25 @@ func run() {
 	// ship.MoveToPoint(Point{40, 30})
 	ship.LandOn(planet)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go (func() {
+		slog.Info("11")
+		running := true
+		for running {
+			select {
+			case <-ctx.Done():
+				running = false
+			case u := <-univese.SimulationTik():
+				if u != nil {
+					slog.Info("tik", "u", u.GetId())
+				}
+			}
+		}
+		slog.Info("12")
+	})()
+
 	// align time
 	a := time.Now().Truncate(time.Second).Add(1 * time.Second)
 	slog.Info("alignment", "a", a)
@@ -26,9 +45,6 @@ func run() {
 
 	tiker := time.NewTicker(1 * time.Second)
 	defer tiker.Stop()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	osSignal := make(chan os.Signal, 1)
 	signal.Notify(osSignal, os.Interrupt)
