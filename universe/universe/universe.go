@@ -135,10 +135,6 @@ func (universe *Universe) Add(obj IObject) {
 		}
 		obj.SetUniverse(universe)
 	}
-	// if _, ok := universe.objects[obj.GetId()]; !ok {
-	// 	universe.objects[obj.GetId()] = obj
-	// 	slog.Info("object is added", slog.Uint64("universe", universe.id), slog.Uint64("object", obj.GetId()))
-	// }
 	universe.objects = append(universe.objects, obj)
 }
 
@@ -146,19 +142,16 @@ func (universe *Universe) Del(obj IObject) {
 	if obj.GetUniverse() == universe {
 		obj.SetUniverse(nil)
 	}
-	// if _, ok := universe.objects[obj.GetId()]; ok {
-	// 	delete(universe.objects, obj.GetId())
-	// 	slog.Info("object is removed", slog.Uint64("universe", universe.id), slog.Uint64("object", obj.GetId()))
-	// }
-	objects := []IObject{}
-	for _, o := range universe.objects {
-		if o != obj {
-			objects = append(objects, o)
+	for i, o := range universe.objects {
+		if o == obj {
+			objects := universe.objects
+			if len(objects) == 1 {
+				universe.objects = []IObject{}
+			} else {
+				universe.objects = append(objects[:i], objects[i+1:]...)
+			}
 		}
 	}
-	universe.objects = objects
-
-	panic(1)
 }
 
 func (universe *Universe) ProcessPhysics() {

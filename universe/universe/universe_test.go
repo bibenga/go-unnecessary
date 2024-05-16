@@ -43,8 +43,49 @@ func TestAdd(t *testing.T) {
 
 	obj := FakeObject{id: 1}
 	universe.Add(&obj)
+
+	if len(universe.objects) != 1 {
+		t.Errorf("object is not added")
+	}
 	if obj.universe == nil {
-		t.Errorf("obj.universe is nil")
+		t.Errorf("object.universe is nil")
+	}
+}
+
+func TestDel(t *testing.T) {
+	universe := NewUniverse(NewRect(0, 0, 200, 200))
+
+	obj1 := FakeObject{id: 1}
+	obj2 := FakeObject{id: 2}
+	obj3 := FakeObject{id: 3}
+	universe.Add(&obj1)
+	universe.Add(&obj2)
+	universe.Add(&obj3)
+	if len(universe.objects) != 3 {
+		t.Errorf("object is not added")
+	}
+
+	universe.Del(&obj2)
+	if len(universe.objects) != 2 {
+		t.Errorf("object is not removed")
+	}
+	if obj2.universe != nil {
+		t.Errorf("object.universe is not nil")
+	}
+	if universe.objects[0].GetId() != 1 {
+		t.Errorf("object1 is removed")
+	}
+	if universe.objects[1].GetId() != 3 {
+		t.Errorf("object3 is removed")
+	}
+
+	universe.Del(&obj1)
+	if len(universe.objects) != 1 {
+		t.Errorf("object1 is not removed")
+	}
+	universe.Del(&obj3)
+	if len(universe.objects) != 0 {
+		t.Errorf("object3 is not removed")
 	}
 }
 
