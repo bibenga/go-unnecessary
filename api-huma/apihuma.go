@@ -81,20 +81,9 @@ func main() {
 
 		config := huma.DefaultConfig("My API", "1.0.0")
 		config.Components.SecuritySchemes = map[string]*huma.SecurityScheme{
-			"bearer": {
-				Type:         "http",
-				Scheme:       "bearer",
-				BearerFormat: "JWT",
-			},
-			"apiKey": {
-				Type: "apiKey",
-				In:   "header",
-				Name: "X-API-KEY",
-			},
-			"http": {
-				Type:   "http",
-				Scheme: "basic",
-			},
+			"bearer": {Type: "http", Scheme: "bearer", BearerFormat: "JWT"},
+			"apiKey": {Type: "apiKey", In: "header", Name: "X-API-KEY"},
+			"http":   {Type: "http", Scheme: "basic"},
 		}
 		api = humachi.New(router, config)
 
@@ -106,7 +95,7 @@ func main() {
 			Summary:     "Get a greeting",
 			Method:      http.MethodPost,
 			Path:        "/greeting/{name}",
-			Security:    []map[string][]string{{}, {"http": {}}, {"apiKey": {}}, {"bearer": {}}},
+			Security:    []map[string][]string{{}, {"http": {}}, {"apiKey": {}}},
 		}, func(ctx context.Context, input *GreetingInput) (*GreetingOutput, error) {
 			slog.Info("-")
 			resp := &GreetingOutput{}
