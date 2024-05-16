@@ -18,6 +18,7 @@ type IStarObject interface {
 
 type Star struct {
 	id       uint64
+	log      *slog.Logger
 	name     string
 	universe *Universe
 	objects  []IObject
@@ -29,13 +30,14 @@ func NewStar(universe *Universe, rect Rect) *Star {
 	id := NextId()
 	star := Star{
 		id:       id,
+		log:      slog.Default().With("universe", universe.GetId(), "star", id),
 		name:     fmt.Sprintf("Star-%d", id),
 		universe: nil,
 		objects:  []IObject{},
 		rect:     rect,
 		point:    rect.Center(),
 	}
-	slog.Info("the star is created", slog.Uint64("star", star.id))
+	star.log.Info("the star is created")
 	if universe != nil {
 		star.SetUniverse(universe)
 		universe.Add(&star)
@@ -86,6 +88,5 @@ func (star *Star) Point() Point {
 }
 
 func (star *Star) ProcessPhysics() {
-	// slog.Info("ProcessPhysics", slog.Uint64("object", object.id))
-	slog.Info("ProcessPhysics", "star", star, "point", star.point)
+	star.log.Info("gravity does not move the star", "point", star.point)
 }

@@ -9,6 +9,7 @@ import (
 
 type Planet struct {
 	id       uint64
+	log      *slog.Logger
 	name     string
 	universe *Universe
 	star     *Star
@@ -31,6 +32,7 @@ func NewPlanet(universe *Universe, star *Star, radius, velocity float64) *Planet
 
 	planet := Planet{
 		id:       id,
+		log:      slog.Default().With("universe", universe.GetId(), "star", star.GetId(), "planet", id),
 		name:     fmt.Sprintf("Planet-%d", id),
 		universe: nil,
 		star:     nil,
@@ -40,7 +42,7 @@ func NewPlanet(universe *Universe, star *Star, radius, velocity float64) *Planet
 		theta:    theta,
 		point:    point,
 	}
-	slog.Info("the planet is created", slog.Uint64("planet", planet.id))
+	planet.log.Info("the planet is created")
 	if universe != nil {
 		planet.SetUniverse(universe)
 		universe.Add(&planet)
@@ -103,8 +105,6 @@ func (planet *Planet) Point() Point {
 }
 
 func (planet *Planet) ProcessPhysics() {
-	// slog.Info("ProcessPhysics", slog.Uint64("object", object.id))
-	// theta_dt := planet.velocity / planet.radius
 	planet.theta += planet.theta_dt
 	if planet.theta >= tau {
 		planet.theta -= tau
@@ -115,5 +115,5 @@ func (planet *Planet) ProcessPhysics() {
 		y: planet.radius*math.Sin(planet.theta) + center.y,
 	}
 
-	slog.Info("ProcessPhysics", "planet", planet, "point", planet.point)
+	planet.log.Info("gravity moves the planet", "point", planet.point)
 }

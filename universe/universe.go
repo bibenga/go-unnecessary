@@ -88,6 +88,7 @@ type IObject interface {
 
 type Universe struct {
 	id            uint64
+	log           *slog.Logger
 	name          string
 	rect          Rect
 	objects       []IObject
@@ -102,6 +103,7 @@ func NewUniverse(rect Rect) *Universe {
 	id := NextId()
 	universe := Universe{
 		id:            id,
+		log:           slog.Default().With("universe", id),
 		name:          fmt.Sprintf("Universe-%d", id),
 		rect:          rect,
 		objects:       []IObject{},
@@ -110,9 +112,7 @@ func NewUniverse(rect Rect) *Universe {
 		simulationTik: make(chan *Universe),
 	}
 	universe.running.Store(false)
-	// slog.Info("the universe is created", slog.Uint64("universe", universe.id), "rect", rect)
-	log := slog.Default().With("universe", universe.id)
-	log.Info("the universe is created", "rect", rect)
+	universe.log.Info("the universe is created", "rect", rect)
 	return &universe
 }
 
@@ -122,6 +122,10 @@ func (universe *Universe) String() string {
 
 func (universe *Universe) GetId() uint64 {
 	return universe.id
+}
+
+func (universe *Universe) Log() *slog.Logger {
+	return universe.log
 }
 
 func (universe *Universe) Rect() *Rect {
@@ -166,10 +170,10 @@ func (universe *Universe) Del(obj IObject) {
 }
 
 func (universe *Universe) ProcessPhysics() {
-	slog.Info("=========================")
+	slog.Debug("=========================")
 	universe.tik += 1
 	universe.simulationTik <- universe
-	slog.Info("ProcessPhysics", "universe", universe.id, "tik", universe.tik)
+	universe.log.Info("The Universe plays with gravity", "tik", universe.tik)
 	for _, obj := range universe.objects {
 		obj.ProcessPhysics()
 	}
@@ -188,7 +192,7 @@ func (universe *Universe) Run() {
 		universe.stopped <- 1
 	}()
 
-	slog.Info("simulation started")
+	universe.log.Info("simulation started")
 	universe.running.Store(true)
 out:
 	for {
@@ -197,14 +201,14 @@ out:
 		// slog.Info("stopSignal received")
 		// 	break out
 		case <-universe.stop:
-			slog.Info("stopSignal received")
+			universe.log.Info("someone wants to stop The Universe")
 			break out
 		case <-tiker.C:
 			universe.ProcessPhysics()
 		}
 	}
 
-	slog.Info("simulation stopped")
+	universe.log.Info("simulation stopped")
 }
 
 func (universe *Universe) Stop() {
@@ -212,6 +216,6 @@ func (universe *Universe) Stop() {
 	if universe.running.Load() {
 		universe.stop <- 1
 		<-universe.stopped
-		slog.Info("simulation should be saved here")
+		universe.log.Info("The Universe is saved or not")
 	}
 }
