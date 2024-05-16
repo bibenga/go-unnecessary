@@ -1,4 +1,4 @@
-package main
+package universe
 
 import (
 	"fmt"
@@ -12,6 +12,7 @@ type Ship struct {
 	universe    *Universe
 	star        *Star
 	point       Point
+	fuel        int64
 	maxVelocity float64
 	velocity    float64
 	destination *Point
@@ -31,6 +32,7 @@ func NewShip(universe *Universe, star *Star, point *Point, velocity float64) *Sh
 		universe:    nil,
 		star:        nil,
 		point:       *point,
+		fuel:        1000,
 		landed:      false,
 		maxVelocity: velocity,
 	}
@@ -116,41 +118,45 @@ func (ship *Ship) LandOn(planet *Planet) {
 func (ship *Ship) ProcessPhysics() {
 	if ship.planet != nil {
 		if ship.landed {
+			ship.fuel = 1000
 			ship.point = ship.planet.Point()
-			ship.log.Info("relax on the planet", "planet", ship.planet, "point", ship.point)
+			ship.log.Info("relax on the planet", "planet", ship.planet, "point", ship.point, "fuel", ship.fuel)
 		} else {
+			ship.fuel -= 5
 			p1, p2 := ship.point, ship.planet.Point()
 			d := Distance(&p1, &p2)
 			if d <= ship.velocity {
 				ship.point = p2
 				ship.landed = true
-				ship.log.Info("land on the planet", "planet", ship.planet, "point", ship.point)
+				ship.log.Info("land on the planet", "planet", ship.planet, "point", ship.point, "fuel", ship.fuel)
 			} else {
 				t := ship.velocity / d
 				ship.point = Point{
 					x: (1-t)*p1.x + t*p2.x,
 					y: (1-t)*p1.y + t*p2.y,
 				}
-				ship.log.Info("move to the planet", "planet", ship.planet, "point", ship.point)
+				ship.log.Info("move to the planet", "planet", ship.planet, "point", ship.point, "fuel", ship.fuel)
 			}
 		}
 	} else if ship.destination != nil {
+		ship.fuel -= 5
 		p1, p2 := &ship.point, ship.destination
 		d := Distance(p1, p2)
 		if d <= ship.velocity {
 			ship.velocity = 0
 			ship.point = *ship.destination
 			ship.destination = nil
-			ship.log.Info("arrived to the point", "point", ship.point)
+			ship.log.Info("arrived to the point", "point", ship.point, "fuel", ship.fuel)
 		} else {
 			t := ship.velocity / d
 			ship.point = Point{
 				x: (1-t)*p1.x + t*p2.x,
 				y: (1-t)*p1.y + t*p2.y,
 			}
-			ship.log.Info("move to the point", "point", ship.point)
+			ship.log.Info("move to the point", "point", ship.point, "fuel", ship.fuel)
 		}
 	} else {
-		ship.log.Info("relax at the point", "point", ship.point)
+		ship.fuel -= 1
+		ship.log.Info("relax at the point", "point", ship.point, "fuel", ship.fuel)
 	}
 }

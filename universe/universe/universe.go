@@ -1,4 +1,4 @@
-package main
+package universe
 
 import (
 	"fmt"
@@ -85,29 +85,27 @@ type IObject interface {
 // }
 
 type Universe struct {
-	id            uint64
-	log           *slog.Logger
-	name          string
-	rect          Rect
-	objects       []IObject
-	running       atomic.Bool
-	tik           int
-	stop          chan int
-	stopped       chan int
-	simulationTik chan *Universe
+	id      uint64
+	log     *slog.Logger
+	name    string
+	rect    Rect
+	objects []IObject
+	running atomic.Bool
+	tik     int
+	stop    chan int
+	stopped chan int
 }
 
 func NewUniverse(rect Rect) *Universe {
 	id := NextId()
 	universe := Universe{
-		id:            id,
-		log:           slog.Default().With("universe", id),
-		name:          fmt.Sprintf("Universe-%d", id),
-		rect:          rect,
-		objects:       []IObject{},
-		stop:          make(chan int),
-		stopped:       make(chan int),
-		simulationTik: make(chan *Universe),
+		id:      id,
+		log:     slog.Default().With("universe", id),
+		name:    fmt.Sprintf("Universe-%d", id),
+		rect:    rect,
+		objects: []IObject{},
+		stop:    make(chan int),
+		stopped: make(chan int),
 	}
 	universe.running.Store(false)
 	universe.log.Info("the universe is created", "rect", rect)
@@ -128,10 +126,6 @@ func (universe *Universe) Log() *slog.Logger {
 
 func (universe *Universe) Rect() *Rect {
 	return &universe.rect
-}
-
-func (universe *Universe) SimulationTik() chan *Universe {
-	return universe.simulationTik
 }
 
 func (universe *Universe) Add(obj IObject) {
@@ -170,7 +164,6 @@ func (universe *Universe) Del(obj IObject) {
 func (universe *Universe) ProcessPhysics() {
 	slog.Debug("=========================")
 	universe.tik += 1
-	universe.simulationTik <- universe
 	universe.log.Info("The Universe plays with gravity", "tik", universe.tik)
 	for _, obj := range universe.objects {
 		obj.ProcessPhysics()
