@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"sync/atomic"
+	"time"
 )
 
 var id atomic.Uint64
@@ -90,7 +91,10 @@ type Universe struct {
 	name          string
 	rect          Rect
 	objects       []IObject
+	running       atomic.Bool
 	tik           int
+	stop          chan int
+	stopped       chan int
 	simulationTik chan *Universe
 }
 
@@ -101,9 +105,14 @@ func NewUniverse(rect Rect) *Universe {
 		name:          fmt.Sprintf("Universe-%d", id),
 		rect:          rect,
 		objects:       []IObject{},
+		stop:          make(chan int),
+		stopped:       make(chan int),
 		simulationTik: make(chan *Universe),
 	}
-	slog.Info("the universe is created", slog.Uint64("universe", universe.id), "rect", rect)
+	universe.running.Store(false)
+	// slog.Info("the universe is created", slog.Uint64("universe", universe.id), "rect", rect)
+	log := slog.Default().With("universe", universe.id)
+	log.Info("the universe is created", "rect", rect)
 	return &universe
 }
 
@@ -163,5 +172,46 @@ func (universe *Universe) ProcessPhysics() {
 	slog.Info("ProcessPhysics", "universe", universe.id, "tik", universe.tik)
 	for _, obj := range universe.objects {
 		obj.ProcessPhysics()
+	}
+}
+
+func (universe *Universe) Run() {
+	tiker := time.NewTicker(1 * time.Second)
+	defer tiker.Stop()
+
+	// universe.ctx, universe.cancel = context.WithCancel(context.Background())
+	// defer universe.cancel()
+	// defer universe.stopWait.Done()
+
+	defer func() {
+		universe.running.Store(false)
+		universe.stopped <- 1
+	}()
+
+	slog.Info("simulation started")
+	universe.running.Store(true)
+out:
+	for {
+		select {
+		// case <-universe.ctx.Done():
+		// slog.Info("stopSignal received")
+		// 	break out
+		case <-universe.stop:
+			slog.Info("stopSignal received")
+			break out
+		case <-tiker.C:
+			universe.ProcessPhysics()
+		}
+	}
+
+	slog.Info("simulation stopped")
+}
+
+func (universe *Universe) Stop() {
+	// can be called once
+	if universe.running.Load() {
+		universe.stop <- 1
+		<-universe.stopped
+		slog.Info("simulation should be saved here")
 	}
 }
