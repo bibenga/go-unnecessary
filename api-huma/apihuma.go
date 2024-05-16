@@ -18,7 +18,8 @@ import (
 
 // Options for the CLI.
 type Options struct {
-	Port int `help:"Port to listen on" default:"8000"`
+	Port  int  `help:"Port to listen on" default:"8000"`
+	Debug bool `debug:"Debug logging" default:false`
 }
 
 // GreetingInput represents the greeting operation request.
