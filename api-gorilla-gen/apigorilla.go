@@ -9,6 +9,7 @@ import (
 	"time"
 	"unnecessary/api-gorilla-gen/server"
 
+	"github.com/gorilla/csrf"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -98,6 +99,7 @@ func main() {
 	// https://github.com/gorilla/mux
 	r := mux.NewRouter()
 	r.Use(handlers.RecoveryHandler())
+	r.Use(handlers.ProxyHeaders)
 
 	fs := http.FileServer(http.Dir("api"))
 	r.PathPrefix("/docs2").Handler(http.StripPrefix("/docs2/", fs))
@@ -106,6 +108,9 @@ func main() {
 
 	rapi := r.NewRoute().Subrouter()
 	rapi.Use(server.NewValidator())
+	csrfMiddleware := csrf.Protect([]byte("32-byte-long-auth-key"))
+	rapi.Use(csrfMiddleware)
+
 	api := server.NewServer()
 	server.HandlerWithOptions(api, server.GorillaServerOptions{
 		BaseURL:    "/api",

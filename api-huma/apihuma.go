@@ -89,12 +89,12 @@ func main() {
 
 		api.UseMiddleware(NewAuthMiddleware(api))
 
-		// Register GET /greeting/{name}
+		// apis
 		huma.Register(api, huma.Operation{
 			OperationID: "get-greeting",
 			Summary:     "Get a greeting",
 			Method:      http.MethodPost,
-			Path:        "/greeting/{name}",
+			Path:        "/api/greeting/{name}",
 			Security:    []map[string][]string{{}, {"http": {}}, {"apiKey": {}}},
 		}, func(ctx context.Context, input *GreetingInput) (*GreetingOutput, error) {
 			slog.Info("-")

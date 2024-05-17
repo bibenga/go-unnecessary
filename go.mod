@@ -52,7 +52,7 @@ require (
 	github.com/unrolled/secure v1.14.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/net v0.25.0
-	google.golang.org/api v0.180.0
+	google.golang.org/api v0.181.0
 	gorm.io/datatypes v1.2.0
 	gorm.io/driver/postgres v1.5.7
 	gorm.io/gen v0.3.26
@@ -62,7 +62,7 @@ require (
 
 require (
 	cloud.google.com/go v0.113.0 // indirect
-	cloud.google.com/go/auth v0.4.1 // indirect
+	cloud.google.com/go/auth v0.4.2 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.2 // indirect
 	cloud.google.com/go/compute v1.26.0 // indirect
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
