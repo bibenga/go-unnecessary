@@ -192,6 +192,8 @@ func registerApis(api huma.API) {
 	defaultSecurity := []map[string][]string{{}, {"bearer": {}}, {"apiKey": {}}, {"http": {}}}
 	defaultErrors := []int{401, 403}
 
+	// Auth
+
 	huma.Register(api, huma.Operation{
 		OperationID: "login",
 		Tags:        []string{"auth"},
@@ -199,8 +201,8 @@ func registerApis(api huma.API) {
 		Method:      http.MethodPost,
 		Path:        "/api/auth/login",
 		Errors:      defaultErrors,
+		Deprecated:  true,
 	}, login)
-
 	huma.Register(api, huma.Operation{
 		OperationID: "logout",
 		Tags:        []string{"auth"},
@@ -208,17 +210,20 @@ func registerApis(api huma.API) {
 		Method:      http.MethodPost,
 		Path:        "/api/auth/logout",
 		Security:    defaultSecurity,
+		Deprecated:  true,
 	}, logout)
 
 	huma.Register(api, huma.Operation{
 		OperationID: "get-me",
-		Tags:        []string{"user"},
+		Tags:        []string{"auth"},
 		Summary:     "Get a user information",
 		Method:      http.MethodGet,
-		Path:        "/api/me",
+		Path:        "/api/auth/me",
 		Errors:      defaultErrors,
 		Security:    defaultSecurity,
 	}, getMe)
+
+	// Items
 
 	huma.Register(api, huma.Operation{
 		OperationID: "get-items",
