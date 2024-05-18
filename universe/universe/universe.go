@@ -96,6 +96,8 @@ type Universe struct {
 	stopped chan int
 }
 
+var _ fmt.Stringer = &Universe{}
+
 func NewUniverse(rect Rect) *Universe {
 	id := NextId()
 	universe := Universe{

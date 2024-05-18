@@ -20,6 +20,9 @@ type Planet struct {
 	point    Point
 }
 
+var _ IObject = &Planet{}
+var _ fmt.Stringer = &Planet{}
+
 func NewPlanet(universe *Universe, star *Star, radius, velocity float64) *Planet {
 	id := NextId()
 

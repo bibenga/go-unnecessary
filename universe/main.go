@@ -16,9 +16,9 @@ func run() {
 	planet := u.NewPlanet(universe, star, 10, 1)
 	ship := u.NewShip(universe, star, u.NewPoint(2.1234, 2.4321), 4.83)
 
-	planet.String()
+	// planet.String()
 	ship.MoveToPoint(*u.NewPoint(40, 30))
-	// ship.LandOn(planet)
+	ship.LandOn(planet)
 
 	// go (func() {
 	// 	slog.Info("11")

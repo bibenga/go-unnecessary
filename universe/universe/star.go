@@ -20,6 +20,9 @@ type Star struct {
 	point    Point
 }
 
+var _ IObject = &Star{}
+var _ fmt.Stringer = &Star{}
+
 func NewStar(universe *Universe, rect Rect) *Star {
 	id := NextId()
 	star := Star{

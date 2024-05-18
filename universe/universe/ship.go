@@ -20,6 +20,9 @@ type Ship struct {
 	landed      bool
 }
 
+var _ IObject = &Ship{}
+var _ fmt.Stringer = &Ship{}
+
 func NewShip(universe *Universe, star *Star, point *Point, velocity float64) *Ship {
 	id := NextId()
 	if point == nil {
