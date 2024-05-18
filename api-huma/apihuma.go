@@ -58,20 +58,49 @@ type GetLoginOutput struct {
 	SetCookie []*http.Cookie `header:"Set-Cookie"`
 }
 
+type ItemIn struct {
+	Name string `json:"name" maxLength:"150"`
+}
+
+type ItemOut struct {
+	ItemId uint64 `json:"id" minimum:"1"`
+	Name   string `json:"name"`
+}
+
 type GetItemsInput struct {
 	PaginationParams
 	Search string `query:"q" maxLength:"200"`
 }
 
-type Item struct {
-	ItemId uint64 `json:"id" minimum:"1"`
-	Name   string `json:"name"`
-}
-
 type GetItemsOutput struct {
 	Body struct {
 		PaginationReponseParams
-		Items []Item `json:"items"`
+		Items []ItemOut `json:"items"`
+	}
+}
+
+type PostItemInput struct {
+	Body struct {
+		ItemIn
+	}
+}
+
+type PostItemOutput struct {
+	Body struct {
+		ItemOut
+	}
+}
+
+type PutItemInput struct {
+	ItemId uint64 `path:"itemId" minimum:"1"`
+	Body   struct {
+		ItemIn
+	}
+}
+
+type PutItemOutput struct {
+	Body struct {
+		ItemOut
 	}
 }
 
@@ -133,13 +162,32 @@ func logout(ctx context.Context, input *struct{}) (*struct{}, error) {
 }
 
 func getItems(ctx context.Context, input *GetItemsInput) (*GetItemsOutput, error) {
-	slog.Info("getItems", "input", input)
+	slog.Info("> getItems", "input", input)
 	resp := &GetItemsOutput{}
 	resp.Body.Page = input.Page
-	resp.Body.Items = []Item{
-		Item{ItemId: 1, Name: "item1"},
-		Item{ItemId: 2, Name: "item2"},
+	resp.Body.Items = []ItemOut{
+		{ItemId: 1, Name: "item1"},
+		{ItemId: 2, Name: "item2"},
 	}
+	slog.Info("< getItems", "resp", resp)
+	return resp, nil
+}
+
+func createItem(ctx context.Context, input *PostItemInput) (*PostItemOutput, error) {
+	slog.Info("> createItem", "input", input)
+	resp := &PostItemOutput{}
+	resp.Body.ItemId = 3
+	resp.Body.Name = input.Body.Name
+	slog.Info("< createItem", "resp", resp)
+	return resp, nil
+}
+
+func updateItem(ctx context.Context, input *PutItemInput) (*PutItemOutput, error) {
+	slog.Info("> updateItem", "input", input)
+	resp := &PutItemOutput{}
+	resp.Body.ItemId = input.ItemId
+	resp.Body.Name = input.Body.Name
+	slog.Info("< updateItem", "resp", resp)
 	return resp, nil
 }
 
@@ -180,6 +228,24 @@ func registerApis(api huma.API) {
 		Path:        "/api/items",
 		Security:    []map[string][]string{{}, {"bearer": {}}, {"apiKey": {}}, {"http": {}}},
 	}, getItems)
+
+	huma.Register(api, huma.Operation{
+		OperationID: "post-item",
+		Tags:        []string{"items"},
+		Summary:     "Create Item",
+		Method:      http.MethodPost,
+		Path:        "/api/items",
+		Security:    []map[string][]string{{}, {"bearer": {}}, {"apiKey": {}}, {"http": {}}},
+	}, createItem)
+
+	huma.Register(api, huma.Operation{
+		OperationID: "put-item",
+		Tags:        []string{"items"},
+		Summary:     "Update Item",
+		Method:      http.MethodPut,
+		Path:        "/api/items/{itemId}",
+		Security:    []map[string][]string{{}, {"bearer": {}}, {"apiKey": {}}, {"http": {}}},
+	}, updateItem)
 }
 
 func main() {
