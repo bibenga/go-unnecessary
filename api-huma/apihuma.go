@@ -37,9 +37,6 @@ type PaginationReponseParams struct {
 	Page int `json:"page" minimum:"1" default:"1"`
 }
 
-type GetMeInput struct {
-}
-
 type GetMeOutput struct {
 	Body struct {
 		UserId   uint64 `json:"user_id" minimum:"1"  doc:"Current user id"`
@@ -123,7 +120,7 @@ func NewAuthMiddleware(api huma.API) func(ctx huma.Context, next func(huma.Conte
 	}
 }
 
-func getMe(ctx context.Context, input *GetMeInput) (*GetMeOutput, error) {
+func getMe(ctx context.Context, input *struct{}) (*GetMeOutput, error) {
 	slog.Info("-")
 	resp := &GetMeOutput{}
 	resp.Body.UserId = 1
@@ -192,13 +189,16 @@ func updateItem(ctx context.Context, input *PutItemInput) (*PutItemOutput, error
 }
 
 func registerApis(api huma.API) {
+	defaultSecurity := []map[string][]string{{}, {"bearer": {}}, {"apiKey": {}}, {"http": {}}}
+	defaultErrors := []int{401, 403}
+
 	huma.Register(api, huma.Operation{
 		OperationID: "login",
 		Tags:        []string{"auth"},
 		Summary:     "Login",
 		Method:      http.MethodPost,
 		Path:        "/api/auth/login",
-		Errors:      []int{401, 403},
+		Errors:      defaultErrors,
 	}, login)
 
 	huma.Register(api, huma.Operation{
@@ -207,7 +207,7 @@ func registerApis(api huma.API) {
 		Summary:     "Logout",
 		Method:      http.MethodPost,
 		Path:        "/api/auth/logout",
-		Security:    []map[string][]string{{}, {"bearer": {}}, {"apiKey": {}}, {"http": {}}},
+		Security:    defaultSecurity,
 	}, logout)
 
 	huma.Register(api, huma.Operation{
@@ -216,8 +216,8 @@ func registerApis(api huma.API) {
 		Summary:     "Get a user information",
 		Method:      http.MethodGet,
 		Path:        "/api/me",
-		Errors:      []int{401, 403},
-		Security:    []map[string][]string{{}, {"bearer": {}}, {"apiKey": {}}, {"http": {}}},
+		Errors:      defaultErrors,
+		Security:    defaultSecurity,
 	}, getMe)
 
 	huma.Register(api, huma.Operation{
@@ -226,7 +226,8 @@ func registerApis(api huma.API) {
 		Summary:     "Get Items",
 		Method:      http.MethodGet,
 		Path:        "/api/items",
-		Security:    []map[string][]string{{}, {"bearer": {}}, {"apiKey": {}}, {"http": {}}},
+		Errors:      defaultErrors,
+		Security:    defaultSecurity,
 	}, getItems)
 
 	huma.Register(api, huma.Operation{
@@ -235,7 +236,8 @@ func registerApis(api huma.API) {
 		Summary:     "Create Item",
 		Method:      http.MethodPost,
 		Path:        "/api/items",
-		Security:    []map[string][]string{{}, {"bearer": {}}, {"apiKey": {}}, {"http": {}}},
+		Errors:      defaultErrors,
+		Security:    defaultSecurity,
 	}, createItem)
 
 	huma.Register(api, huma.Operation{
@@ -244,7 +246,8 @@ func registerApis(api huma.API) {
 		Summary:     "Update Item",
 		Method:      http.MethodPut,
 		Path:        "/api/items/{itemId}",
-		Security:    []map[string][]string{{}, {"bearer": {}}, {"apiKey": {}}, {"http": {}}},
+		Errors:      defaultErrors,
+		Security:    defaultSecurity,
 	}, updateItem)
 }
 
