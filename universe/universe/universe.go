@@ -91,7 +91,7 @@ type Universe struct {
 	rect    Rect
 	objects []IObject
 	running atomic.Bool
-	tik     int
+	tik     uint64
 	stop    chan int
 	stopped chan int
 }
@@ -158,7 +158,7 @@ func (universe *Universe) Del(obj IObject) {
 
 func (universe *Universe) ProcessPhysics() {
 	slog.Debug("=========================")
-	universe.tik += 1
+	universe.tik++
 	universe.log.Info("The Universe plays with gravity", "tik", universe.tik)
 	for _, obj := range universe.objects {
 		obj.ProcessPhysics()
