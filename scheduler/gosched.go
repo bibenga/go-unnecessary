@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-co-op/gocron/v2"
+	"github.com/google/uuid"
 	"github.com/reugn/go-quartz/job"
 	"github.com/reugn/go-quartz/quartz"
 )
@@ -88,7 +89,23 @@ func playGocron() {
 	_l := log.New(log.Default().Writer(), "[gocron] - ", log.Default().Flags())
 
 	_l.Print("> playGocron")
-	s, err := gocron.NewScheduler(gocron.WithLocation(time.UTC))
+	s, err := gocron.NewScheduler(
+		gocron.WithLocation(time.UTC),
+		gocron.WithLogger(gocron.NewLogger(gocron.LogLevelDebug)),
+		gocron.WithGlobalJobOptions(
+			gocron.WithEventListeners(
+				gocron.BeforeJobRuns(func(jobID uuid.UUID, jobName string) {
+					_l.Printf("> %v, %v", jobID, jobName)
+				}),
+				gocron.AfterJobRuns(func(jobID uuid.UUID, jobName string) {
+					_l.Printf("< %v, %v", jobID, jobName)
+				}),
+				gocron.AfterJobRunsWithError(func(jobID uuid.UUID, jobName string, err error) {
+					_l.Printf("< %v, %v, %v", jobID, jobName, err)
+				}),
+			),
+		),
+	)
 	if err != nil {
 		_l.Panic(err)
 	}
@@ -112,7 +129,7 @@ func playGocron() {
 	time.Sleep(time.Second * 5)
 	_l.Print("<<<<<")
 
-	s.Shutdown()
+	// s.Shutdown()
 
 	_l.Print("< playGocron")
 }
