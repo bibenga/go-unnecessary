@@ -119,6 +119,8 @@ func playGocron() {
 				_l.Print("Tik")
 			},
 		),
+		gocron.WithName("olala"),
+		gocron.WithTags("game", "llm"),
 	)
 	if err != nil {
 		_l.Panic(err)
