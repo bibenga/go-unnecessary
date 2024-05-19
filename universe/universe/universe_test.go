@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 type FakeObject struct {
@@ -34,6 +35,35 @@ func (fake *FakeObject) SetUniverse(universe *Universe) {
 
 func (fake *FakeObject) ProcessPhysics() {
 	fake.processed++
+}
+
+type FakeObject2 struct {
+	mock.Mock
+}
+
+var _ fmt.Stringer = &FakeObject2{}
+var _ IObject = &FakeObject2{}
+
+func (f *FakeObject2) GetId() uint64 {
+	args := f.Called()
+	return uint64(args.Int(0))
+}
+
+func (f *FakeObject2) GetUniverse() *Universe {
+	args := f.Called()
+	u := args.Get(0)
+	if u == nil {
+		return nil
+	}
+	return u.(*Universe)
+}
+
+func (f *FakeObject2) SetUniverse(universe *Universe) {
+	f.Called(universe)
+}
+
+func (f *FakeObject2) ProcessPhysics() {
+	f.Called()
 }
 
 func TestNew(t *testing.T) {
