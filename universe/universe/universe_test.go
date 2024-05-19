@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 )
 
 type FakeObject struct {
@@ -37,27 +37,21 @@ func (fake *FakeObject) ProcessPhysics() {
 }
 
 func TestNew(t *testing.T) {
-	assert := require.New(t)
-
 	universe := NewUniverse(NewRect(0, 0, 200, 200))
-	assert.NotNil(universe)
+	assert.NotNil(t, universe)
 }
 
 func TestAdd(t *testing.T) {
-	assert := require.New(t)
-
 	universe := NewUniverse(NewRect(0, 0, 200, 200))
 
 	obj := FakeObject{id: 1}
 	universe.Add(&obj)
 
-	assert.Len(universe.objects, 1)
-	assert.NotNil(obj.universe)
+	assert.Len(t, universe.objects, 1)
+	assert.NotNil(t, obj.universe)
 }
 
 func TestDel(t *testing.T) {
-	assert := require.New(t)
-
 	universe := NewUniverse(NewRect(0, 0, 200, 200))
 
 	obj1 := FakeObject{id: 1}
@@ -66,37 +60,34 @@ func TestDel(t *testing.T) {
 	universe.Add(&obj1)
 	universe.Add(&obj2)
 	universe.Add(&obj3)
-	assert.Len(universe.objects, 3)
+	assert.Len(t, universe.objects, 3)
 
 	universe.Del(&obj2)
-	assert.Len(universe.objects, 2)
-	assert.Nil(obj2.universe)
+	assert.Len(t, universe.objects, 2)
+	assert.Nil(t, obj2.universe)
 
-	assert.Equal(universe.objects[0].GetId(), uint64(1))
-	assert.Equal(universe.objects[1].GetId(), uint64(3))
+	assert.Equal(t, universe.objects[0].GetId(), uint64(1))
+	assert.Equal(t, universe.objects[1].GetId(), uint64(3))
 
 	universe.Del(&obj1)
-	assert.Len(universe.objects, 1)
+	assert.Len(t, universe.objects, 1)
 	universe.Del(&obj3)
-	assert.Len(universe.objects, 0)
+	assert.Len(t, universe.objects, 0)
 }
 
 func TestProcessPhysics(t *testing.T) {
-	assert := require.New(t)
 	universe := NewUniverse(NewRect(0, 0, 200, 200))
 	universe.ProcessPhysics()
-	assert.Equal(universe.tik, uint64(1))
+	assert.Equal(t, universe.tik, uint64(1))
 }
 
 func TestObjectsProcessPhysics(t *testing.T) {
-	assert := require.New(t)
-
 	universe := NewUniverse(NewRect(0, 0, 200, 200))
 
 	obj := FakeObject{id: 1}
 	universe.Add(&obj)
 
 	universe.ProcessPhysics()
-	assert.Equal(universe.tik, uint64(1))
-	assert.Equal(obj.processed, 1)
+	assert.Equal(t, universe.tik, uint64(1))
+	assert.Equal(t, obj.processed, 1)
 }
