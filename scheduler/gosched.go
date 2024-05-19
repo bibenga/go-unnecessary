@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/go-co-op/gocron"
+	"github.com/go-co-op/gocron/v2"
 	"github.com/reugn/go-quartz/job"
 	"github.com/reugn/go-quartz/quartz"
 )
@@ -85,27 +85,34 @@ func playQuartz() {
 }
 
 func playGocron() {
-	// creo que gocron no es hilo seguro
-
 	_l := log.New(log.Default().Writer(), "[gocron] - ", log.Default().Flags())
 
 	_l.Print("> playGocron")
-	s := gocron.NewScheduler(time.UTC)
-	s.StartAsync()
-	defer s.Stop()
-
-	_, err := s.CronWithSeconds("* * * * * *").Do(func() {
-		_l.Print("Tik")
-	})
+	s, err := gocron.NewScheduler(gocron.WithLocation(time.UTC))
 	if err != nil {
 		_l.Panic(err)
 	}
+	s.Start()
+	defer s.Shutdown()
+
+	j, err := s.NewJob(
+		gocron.CronJob("* * * * * *", true),
+		gocron.NewTask(
+			func() {
+				_l.Print("Tik")
+			},
+		),
+	)
+	if err != nil {
+		_l.Panic(err)
+	}
+	_l.Printf("Job: %v", j.ID())
 
 	_l.Print(">>>>>")
 	time.Sleep(time.Second * 5)
 	_l.Print("<<<<<")
 
-	s.Stop()
+	s.Shutdown()
 
 	_l.Print("< playGocron")
 }
