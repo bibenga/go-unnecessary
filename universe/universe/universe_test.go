@@ -37,19 +37,19 @@ func (fake *FakeObject) ProcessPhysics() {
 	fake.processed++
 }
 
-type FakeObject2 struct {
+type MockObject struct {
 	mock.Mock
 }
 
-var _ fmt.Stringer = &FakeObject2{}
-var _ IObject = &FakeObject2{}
+var _ fmt.Stringer = &MockObject{}
+var _ IObject = &MockObject{}
 
-func (f *FakeObject2) GetId() uint64 {
+func (f *MockObject) GetId() uint64 {
 	args := f.Called()
 	return uint64(args.Int(0))
 }
 
-func (f *FakeObject2) GetUniverse() *Universe {
+func (f *MockObject) GetUniverse() *Universe {
 	args := f.Called()
 	u := args.Get(0)
 	if u == nil {
@@ -58,11 +58,11 @@ func (f *FakeObject2) GetUniverse() *Universe {
 	return u.(*Universe)
 }
 
-func (f *FakeObject2) SetUniverse(universe *Universe) {
+func (f *MockObject) SetUniverse(universe *Universe) {
 	f.Called(universe)
 }
 
-func (f *FakeObject2) ProcessPhysics() {
+func (f *MockObject) ProcessPhysics() {
 	f.Called()
 }
 
@@ -114,10 +114,14 @@ func TestProcessPhysics(t *testing.T) {
 func TestObjectsProcessPhysics(t *testing.T) {
 	universe := NewUniverse(NewRect(0, 0, 200, 200))
 
-	obj := FakeObject{id: 1}
-	universe.Add(&obj)
+	obj := new(MockObject)
+	obj.On("GetUniverse").Return(nil)
+	obj.On("SetUniverse", universe).Return()
+	obj.On("ProcessPhysics").Return()
+
+	universe.Add(obj)
 
 	universe.ProcessPhysics()
 	assert.Equal(t, universe.tik, uint64(1))
-	assert.Equal(t, obj.processed, 1)
+	obj.AssertExpectations(t)
 }
