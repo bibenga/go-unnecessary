@@ -7,16 +7,19 @@ import (
 	"time"
 )
 
-func genCtx(ctx context.Context) <-chan int {
-	dst := make(chan int, 2)
+func sender(ctx context.Context) <-chan int {
+	dst := make(chan int)
 	n := 1
 	go func() {
+		slog.Info("> sender")
+		defer func() {
+			close(dst)
+			slog.Info("< sender")
+		}()
 		for {
-			slog.Info("gorutine")
 			select {
 			case <-ctx.Done():
-				err := ctx.Err()
-				slog.Info("done", "err", err)
+				slog.Info("sender", "err", ctx.Err())
 				return // returning not to leak the goroutine
 			case dst <- n:
 				slog.Info("sent", "n", n)
@@ -28,6 +31,23 @@ func genCtx(ctx context.Context) <-chan int {
 	return dst
 }
 
+func listener(ctx context.Context, gen <-chan int) {
+	slog.Info("> listener")
+	defer func() {
+		slog.Info("< listener")
+	}()
+	for {
+		slog.Info("listener")
+		select {
+		case <-ctx.Done():
+			slog.Info("listener", "err", ctx.Err())
+			return // returning not to leak the goroutine
+		case n := <-gen:
+			slog.Info("listener recv", "n", n)
+		}
+	}
+}
+
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile | log.Lmsgprefix)
 	log.SetPrefix("")
@@ -36,25 +56,23 @@ func main() {
 	defer cancel()
 
 	slog.Info(">")
-	// for n := range genCtx(ctx) {
-	// 	slog.Info("recv", "n", n)
-	// 	if n >= 100 {
-	// 		break
-	// 	}
-	// }
-	gen := genCtx(ctx)
+	gen := sender(ctx)
+
+	go listener(ctx, gen)
+
 out:
 	for {
+		slog.Info("main")
 		select {
 		case <-ctx.Done():
-			err := ctx.Err()
-			slog.Info("main done", "err", err)
+			slog.Info("main done", "err", ctx.Err())
 			break out
 		case n := <-gen:
 			slog.Info("main recv", "n", n)
-			time.Sleep(500 * time.Millisecond)
-			n++
 		}
 	}
 	slog.Info("<")
+
+	// wait a gorutines, it is bad
+	time.Sleep(1 * time.Second)
 }
