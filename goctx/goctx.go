@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"log/slog"
 	"time"
 )
 
@@ -11,14 +12,15 @@ func genCtx(ctx context.Context) <-chan int {
 	n := 1
 	go func() {
 		for {
-			log.Print("gorutine")
+			slog.Info("gorutine")
 			select {
 			case <-ctx.Done():
-				log.Print("done...")
+				err := ctx.Err()
+				slog.Info("done", "err", err)
 				return // returning not to leak the goroutine
 			case dst <- n:
-				log.Printf("sent %d", n)
-				time.Sleep(100 * time.Millisecond)
+				slog.Info("sent", "n", n)
+				time.Sleep(500 * time.Millisecond)
 				n++
 			}
 		}
@@ -30,16 +32,29 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile | log.Lmsgprefix)
 	log.SetPrefix("")
 
-	log.Print("context")
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
-	for n := range genCtx(ctx) {
-		log.Printf("recv %d", n)
-		if n == 5 {
-			break
+
+	slog.Info(">")
+	// for n := range genCtx(ctx) {
+	// 	slog.Info("recv", "n", n)
+	// 	if n >= 100 {
+	// 		break
+	// 	}
+	// }
+	gen := genCtx(ctx)
+out:
+	for {
+		select {
+		case <-ctx.Done():
+			err := ctx.Err()
+			slog.Info("main done", "err", err)
+			break out
+		case n := <-gen:
+			slog.Info("main recv", "n", n)
+			time.Sleep(500 * time.Millisecond)
+			n++
 		}
 	}
-
-	cancel()
-	time.Sleep(100 * time.Millisecond)
+	slog.Info("<")
 }
