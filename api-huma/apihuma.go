@@ -101,6 +101,10 @@ type PutItemOutput struct {
 	}
 }
 
+type DelItemInput struct {
+	ItemId uint64 `path:"itemId" minimum:"1"`
+}
+
 func NewAuthMiddleware(api huma.API) func(ctx huma.Context, next func(huma.Context)) {
 	return func(ctx huma.Context, next func(huma.Context)) {
 		auths := map[string]bool{
@@ -188,6 +192,11 @@ func updateItem(ctx context.Context, input *PutItemInput) (*PutItemOutput, error
 	return resp, nil
 }
 
+func deleteItem(ctx context.Context, input *DelItemInput) (*struct{}, error) {
+	slog.Info("> deleteItem", "input", input)
+	return nil, nil
+}
+
 func registerApis(api huma.API) {
 	defaultSecurity := []map[string][]string{{}, {"bearer": {}}, {"apiKey": {}}, {"http": {}}}
 	defaultErrors := []int{401, 403}
@@ -216,7 +225,7 @@ func registerApis(api huma.API) {
 	huma.Register(api, huma.Operation{
 		OperationID: "get-me",
 		Tags:        []string{"auth"},
-		Summary:     "Get a user information",
+		Summary:     "Get an information of a current logged user ",
 		Method:      http.MethodGet,
 		Path:        "/api/auth/me",
 		Errors:      defaultErrors,
@@ -224,7 +233,6 @@ func registerApis(api huma.API) {
 	}, getMe)
 
 	// Items
-
 	huma.Register(api, huma.Operation{
 		OperationID: "get-items",
 		Tags:        []string{"items"},
@@ -234,17 +242,16 @@ func registerApis(api huma.API) {
 		Errors:      defaultErrors,
 		Security:    defaultSecurity,
 	}, getItems)
-
 	huma.Register(api, huma.Operation{
-		OperationID: "post-item",
-		Tags:        []string{"items"},
-		Summary:     "Create Item",
-		Method:      http.MethodPost,
-		Path:        "/api/items",
-		Errors:      defaultErrors,
-		Security:    defaultSecurity,
+		OperationID:   "post-item",
+		Tags:          []string{"items"},
+		Summary:       "Create Item",
+		Method:        http.MethodPost,
+		Path:          "/api/items",
+		Errors:        defaultErrors,
+		Security:      defaultSecurity,
+		DefaultStatus: http.StatusCreated,
 	}, createItem)
-
 	huma.Register(api, huma.Operation{
 		OperationID: "put-item",
 		Tags:        []string{"items"},
@@ -254,6 +261,16 @@ func registerApis(api huma.API) {
 		Errors:      defaultErrors,
 		Security:    defaultSecurity,
 	}, updateItem)
+	huma.Register(api, huma.Operation{
+		OperationID:   "del-item",
+		Tags:          []string{"items"},
+		Summary:       "Delete Item",
+		Method:        http.MethodDelete,
+		Path:          "/api/items/{itemId}",
+		Errors:        defaultErrors,
+		Security:      defaultSecurity,
+		DefaultStatus: http.StatusNoContent,
+	}, deleteItem)
 }
 
 func main() {
@@ -280,7 +297,7 @@ func main() {
 			StatusCode: 302,
 		}))
 
-		config := huma.DefaultConfig("My API", "1.0.0")
+		config := huma.DefaultConfig("My Huma API", "1.0.0")
 		config.Components.SecuritySchemes = map[string]*huma.SecurityScheme{
 			"bearer": {Type: "http", Scheme: "bearer", BearerFormat: "JWT"},
 			"apiKey": {Type: "apiKey", In: "header", Name: "X-API-KEY"},
@@ -288,22 +305,7 @@ func main() {
 		}
 
 		api = humafiber.New(app, config)
-
 		api.UseMiddleware(NewAuthMiddleware(api))
-
-		// apis
-		// huma.Register(api, huma.Operation{
-		// 	OperationID: "get-greeting",
-		// 	Summary:     "Get a greeting",
-		// 	Method:      http.MethodPost,
-		// 	Path:        "/api/greeting/{name}",
-		// 	Security:    []map[string][]string{{}, {"http": {}}, {"apiKey": {}}},
-		// }, func(ctx context.Context, input *GreetingInput) (*GreetingOutput, error) {
-		// 	slog.Info("-")
-		// 	resp := &GreetingOutput{}
-		// 	resp.Body.Message = fmt.Sprintf("Hello, %s!", input.Name)
-		// 	return resp, nil
-		// })
 		registerApis(api)
 
 		// Tell the CLI how to start your router.
