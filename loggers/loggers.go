@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-logr/stdr"
 	"github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
 	"github.com/rs/zerolog/pkgerrors"
@@ -91,8 +92,19 @@ func playZap() {
 	log.Printf("playZap %v", 3)
 }
 
+func playLogr() {
+	logger := stdr.NewWithOptions(
+		log.New(os.Stderr, "", log.LstdFlags),
+		stdr.Options{LogCaller: stdr.All},
+	)
+	logger = logger.WithName("SomeName")
+	logger.Info("------------")
+	logger.Info("playLogr", "value", 1, "map", map[string]int{"k": 1})
+}
+
 func main() {
 	playStdLog()
 	playZerolog()
 	playZap()
+	playLogr()
 }
