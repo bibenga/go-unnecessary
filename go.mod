@@ -1,8 +1,8 @@
 module unnecessary
 
-go 1.22
+go 1.22.0
 
-toolchain go1.22.1
+toolchain go1.22.3
 
 require (
 	firebase.google.com/go/v4 v4.14.0
@@ -35,9 +35,11 @@ require (
 	github.com/gorilla/sessions v1.2.2
 	github.com/gorilla/websocket v1.5.1
 	github.com/gosimple/slug v1.14.0
-	github.com/jackc/pgx/v5 v5.5.5
+	github.com/jackc/pgx/v5 v5.6.0
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/lib/pq v1.10.9
+	github.com/maragudk/gomponents v0.20.2
+	github.com/maragudk/gomponents-htmx v0.5.0
 	github.com/mozillazg/go-unidecode v0.2.0
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/qor5/web v1.3.2
@@ -51,7 +53,9 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/theplant/htmlgo v1.0.3
 	github.com/unrolled/secure v1.14.0
-	github.com/valyala/fasthttp v1.53.0
+	github.com/valyala/fasthttp v1.54.0
+	github.com/willoma/bulma-gomponents v0.11.1
+	github.com/willoma/gomplements v0.6.1
 	go.uber.org/zap v1.27.0
 	golang.org/x/net v0.25.0
 	google.golang.org/api v0.181.0
@@ -63,7 +67,7 @@ require (
 )
 
 require (
-	cloud.google.com/go v0.113.0 // indirect
+	cloud.google.com/go v0.114.0 // indirect
 	cloud.google.com/go/auth v0.4.2 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.2 // indirect
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
@@ -87,7 +91,7 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.4 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/glebarez/go-sqlite v1.22.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
@@ -178,7 +182,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/crypto v0.23.0 // indirect
-	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // indirect
+	golang.org/x/exp v0.0.0-20240525044651-4c93da0ed11d // indirect
 	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/oauth2 v0.20.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
@@ -197,7 +201,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/mysql v1.5.6 // indirect
 	gorm.io/hints v1.1.2 // indirect
-	modernc.org/libc v1.50.8 // indirect
+	modernc.org/libc v1.50.9 // indirect
 	modernc.org/mathutil v1.6.0 // indirect
 	modernc.org/memory v1.8.0 // indirect
 	modernc.org/sqlite v1.29.10 // indirect
