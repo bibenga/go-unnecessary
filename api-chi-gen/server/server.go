@@ -1,11 +1,10 @@
 // go:generate go run github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest --config=server.cfg.yaml ../api.yaml
 // go:generate go run github.com/deepmap/oapi-codegen/cmd/oapi-codegen --config=server.cfg.yaml ../api.yaml
-// go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
-// go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@latest
+// go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
 //
-//go:generate oapi-codegen --config=model.cfg.yaml  ../../api/api.yaml
-//go:generate oapi-codegen --config=client.cfg.yaml ../../api/api.yaml
-//go:generate oapi-codegen --config=server.cfg.yaml ../../api/api.yaml
+//go:generate go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen --config=model.cfg.yaml ../../api/api.yaml
+//go:generate go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen --config=client.cfg.yaml ../../api/api.yaml
+//go:generate go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen --config=server.cfg.yaml ../../api/api.yaml
 
 package server
 
@@ -17,9 +16,10 @@ import (
 	"io"
 	"net/http"
 
-	chiMiddleware "github.com/deepmap/oapi-codegen/pkg/chi-middleware"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
+
+	nethttpMiddleware "github.com/oapi-codegen/nethttp-middleware"
 
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/rs/zerolog/log"
@@ -31,7 +31,7 @@ func NewValidator() (func(http.Handler) http.Handler, error) {
 		return nil, fmt.Errorf("loading spec: %w", err)
 	}
 
-	validator := chiMiddleware.OapiRequestValidatorWithOptions(spec, &chiMiddleware.Options{
+	validator := nethttpMiddleware.OapiRequestValidatorWithOptions(spec, &nethttpMiddleware.Options{
 		Options: openapi3filter.Options{
 			AuthenticationFunc: func(fctx context.Context, ai *openapi3filter.AuthenticationInput) error {
 				ctx := ai.RequestValidationInput.Request.Context()
