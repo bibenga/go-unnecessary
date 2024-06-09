@@ -7,7 +7,6 @@ toolchain go1.22.3
 require (
 	firebase.google.com/go/v4 v4.14.1
 	github.com/danielgtaylor/huma/v2 v2.18.0
-	github.com/deepmap/oapi-codegen v1.16.3
 	github.com/getkin/kin-openapi v0.124.0
 	github.com/gin-contrib/logger v1.1.2
 	github.com/gin-contrib/requestid v1.0.2
@@ -40,6 +39,9 @@ require (
 	github.com/maragudk/gomponents v0.20.2
 	github.com/maragudk/gomponents-htmx v0.5.0
 	github.com/mozillazg/go-unidecode v0.2.0
+	github.com/oapi-codegen/echo-middleware v1.0.2
+	github.com/oapi-codegen/fiber-middleware v1.0.2
+	github.com/oapi-codegen/gin-middleware v1.0.2
 	github.com/oapi-codegen/nethttp-middleware v1.0.2
 	github.com/oapi-codegen/oapi-codegen/v2 v2.3.0
 	github.com/oapi-codegen/runtime v1.1.1

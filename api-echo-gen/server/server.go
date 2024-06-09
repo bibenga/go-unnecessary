@@ -16,9 +16,9 @@ import (
 	"net/http"
 	"strings"
 
-	echoMiddleware "github.com/deepmap/oapi-codegen/pkg/middleware"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/labstack/echo/v4"
+	echoMiddleware "github.com/oapi-codegen/echo-middleware"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )

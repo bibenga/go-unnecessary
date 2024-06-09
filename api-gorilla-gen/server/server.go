@@ -18,8 +18,8 @@ import (
 	"log"
 	"net/http"
 
-	chiMiddleware "github.com/deepmap/oapi-codegen/pkg/chi-middleware"
 	"github.com/getkin/kin-openapi/openapi3filter"
+	nethttpMiddleware "github.com/oapi-codegen/nethttp-middleware"
 )
 
 func NewValidator() func(http.Handler) http.Handler {
@@ -28,7 +28,7 @@ func NewValidator() func(http.Handler) http.Handler {
 		panic(fmt.Errorf("loading spec: %w", err))
 	}
 
-	validator := chiMiddleware.OapiRequestValidatorWithOptions(spec, &chiMiddleware.Options{
+	validator := nethttpMiddleware.OapiRequestValidatorWithOptions(spec, &nethttpMiddleware.Options{
 		Options: openapi3filter.Options{
 			AuthenticationFunc: func(fctx context.Context, ai *openapi3filter.AuthenticationInput) error {
 				// ctx := ai.RequestValidationInput.Request.Context()

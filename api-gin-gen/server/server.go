@@ -15,11 +15,11 @@ import (
 	"fmt"
 	"net/http"
 
-	ginMiddleware "github.com/deepmap/oapi-codegen/pkg/gin-middleware"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/gin-contrib/requestid"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	ginMiddleware "github.com/oapi-codegen/gin-middleware"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"go.uber.org/zap"

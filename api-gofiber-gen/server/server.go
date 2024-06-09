@@ -14,10 +14,10 @@ import (
 	"errors"
 	"fmt"
 
-	fiberMiddleware "github.com/deepmap/oapi-codegen/pkg/fiber-middleware"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
+	fiberMiddleware "github.com/oapi-codegen/fiber-middleware"
 	"github.com/rs/zerolog/log"
 )
 
