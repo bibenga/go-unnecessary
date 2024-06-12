@@ -26,6 +26,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.4
 	github.com/gofiber/storage/memory v1.3.4
 	github.com/gofiber/template/html/v2 v2.1.1
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-migrate/migrate/v4 v4.17.1
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/csrf v1.7.2
@@ -108,7 +109,6 @@ require (
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/gofiber/template v1.8.3 // indirect
 	github.com/gofiber/utils v1.1.0 // indirect
-	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
