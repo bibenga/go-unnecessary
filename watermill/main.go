@@ -22,13 +22,10 @@ func main() {
 		gochannel.Config{},
 		watermill.NewStdLogger(true, false),
 	)
+	// publisher watermill.Pun
 
-	messages, err := pubSub.Subscribe(context.Background(), "example.topic")
-	if err != nil {
-		panic(err)
-	}
-
-	go process(messages)
+	go process(pubSub)
+	time.Sleep(100 * time.Millisecond)
 	go publish(pubSub)
 
 	slog.Info("sleep")
@@ -36,22 +33,30 @@ func main() {
 	slog.Info("terminate")
 }
 
-func publish(pubSub *gochannel.GoChannel) {
+func publish(publisher message.Publisher) {
+	slog.Info("> publish")
 	for i := range 4 {
 		msg := message.NewMessage(watermill.NewUUID(), []byte(fmt.Sprintf("message %v", i)))
 		slog.Info("Send message", "ID", msg.UUID, "Payload", string(msg.Payload))
 		// slog.Info("Send message", "msg", msg)
-		err := pubSub.Publish("example.topic", msg)
+		err := publisher.Publish("example.topic", msg)
 		if err != nil {
 			panic(err)
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
+	slog.Info("< publish")
 }
 
-func process(messages <-chan *message.Message) {
+func process(subscriper message.Subscriber) {
+	slog.Info("> process")
+	messages, err := subscriper.Subscribe(context.Background(), "example.topic")
+	if err != nil {
+		panic(err)
+	}
 	for msg := range messages {
 		slog.Info("Received message", "ID", msg.UUID, "Payload", string(msg.Payload))
 		msg.Ack()
 	}
+	slog.Info("< process")
 }
