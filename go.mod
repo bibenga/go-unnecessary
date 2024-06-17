@@ -5,6 +5,7 @@ go 1.22.3
 require (
 	firebase.google.com/go/v4 v4.14.1
 	github.com/ThreeDotsLabs/watermill v1.3.5
+	github.com/adhocore/gronx v1.8.1
 	github.com/bibenga/gomod1 v0.0.0-20240616183024-b8ba9df80fd6
 	github.com/danielgtaylor/huma/v2 v2.18.0
 	github.com/getkin/kin-openapi v0.125.0
@@ -40,6 +41,7 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/maragudk/gomponents v0.20.3
 	github.com/maragudk/gomponents-htmx v0.5.0
+	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/mozillazg/go-unidecode v0.2.0
 	github.com/oapi-codegen/echo-middleware v1.0.2
 	github.com/oapi-codegen/fiber-middleware v1.0.2
