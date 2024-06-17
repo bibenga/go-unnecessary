@@ -27,6 +27,8 @@ type Scheduler struct {
 	entries EntryMap
 	stop    chan struct{}
 	stopped chan struct{}
+	timer   *time.Timer
+	entry   *Entry
 }
 
 func NewScheduler(db *sql.DB) *Scheduler {
@@ -84,21 +86,50 @@ func (scheduler *Scheduler) Run() {
 		panic(err)
 	}
 
-	ticker := time.NewTicker(5 * time.Second)
-	defer ticker.Stop()
+	reloader := time.NewTicker(5 * time.Second)
+	defer reloader.Stop()
+
+	// scheduler.timer = time.NewTimer(1 * time.Second)
+	// scheduler.scheduleNext()
 
 	for {
+		// timer := scheduler.timer
+		entry := scheduler.getNext()
+		var timer *time.Timer
+		if entry == nil {
+			timer = time.NewTimer(1 * time.Second)
+		} else {
+			timer = time.NewTimer(time.Until(*entry.NextTs))
+		}
+		defer timer.Stop()
+
 		select {
 		case <-scheduler.stop:
 			slog.Info("terminate")
 			scheduler.stopped <- struct{}{}
 			return
-		case <-ticker.C:
-			err = scheduler.reload()
-			if err != nil {
-				slog.Error("db", "error", err)
-				panic(err)
+		case <-timer.C:
+			id := -1
+			// entry := scheduler.entry
+			if entry != nil {
+				id = int(entry.Id)
+				if entry.Cron != nil {
+					nextTs, err := gronx.NextTick(*entry.Cron, false)
+					if err != nil {
+						panic(err)
+					}
+					entry.LastTs = entry.NextTs
+					entry.NextTs = &nextTs
+				}
 			}
+			slog.Info("tik", "entry", id)
+		case <-reloader.C:
+			timer.Stop()
+			// err = scheduler.reload()
+			// if err != nil {
+			// 	slog.Error("db", "error", err)
+			// 	panic(err)
+			// }
 		}
 	}
 }
@@ -110,6 +141,47 @@ func (scheduler *Scheduler) reload() error {
 	}
 	scheduler.entries = entries
 	return nil
+}
+
+func (scheduler *Scheduler) getNext() *Entry {
+	var next *Entry = nil
+	for _, entry := range scheduler.entries {
+		if next == nil {
+			next = entry
+			// slog.Info("=> ", "next", next.NextTs)
+		} else {
+			// slog.Info("=> ", "next", next.NextTs, "entry", entry.NextTs)
+			if entry.NextTs.Before(*next.NextTs) {
+				next = entry
+			}
+		}
+	}
+	return next
+}
+
+func (scheduler *Scheduler) scheduleNext() {
+	var next *Entry = nil
+	for _, entry := range scheduler.entries {
+		if next == nil {
+			next = entry
+			// slog.Info("=> ", "next", next.NextTs)
+		} else {
+			// slog.Info("=> ", "next", next.NextTs, "entry", entry.NextTs)
+			if entry.NextTs.Before(*next.NextTs) {
+				next = entry
+			}
+		}
+	}
+
+	if next != nil {
+		// scheduler.timer.Reset(time.Since(*next.NextTs))
+		// scheduler.entry = next
+		// slog.Info("next", "entry", next.Id)
+	} else {
+		// scheduler.timer.Reset(1 * time.Second)
+		// scheduler.entry = nil
+		// slog.Info("next", "entry", nil)
+	}
 }
 
 func (scheduler *Scheduler) getEntries() (EntryMap, error) {
@@ -210,6 +282,27 @@ func (scheduler *Scheduler) Delete(id int) error {
 	}
 	if rowsAffected != 1 {
 		return fmt.Errorf("an object does not exist")
+	}
+	return nil
+}
+
+func (scheduler *Scheduler) update(entry *Entry) error {
+	db := scheduler.db
+
+	slog.Info("update the entry", "entry", entry)
+	res, err := db.Exec(
+		`update barn_entry set next_ts=?, last_ts=? where id=?`,
+		entry.NextTs, entry.LastTs, entry.Id,
+	)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected != 1 {
+		return fmt.Errorf("an object deleted")
 	}
 	return nil
 }
