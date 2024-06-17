@@ -15,7 +15,7 @@ type Entry struct {
 	Name     string
 	Cron     *string
 	IsActive bool
-	NextTs   *time.Time
+	NextTs   time.Time
 	LastTs   *time.Time
 	Message  *string
 }
@@ -108,18 +108,25 @@ func (scheduler *Scheduler) Run() {
 					if err != nil {
 						panic(err)
 					}
-					entry.LastTs = entry.NextTs
-					entry.NextTs = &nextTs
+					entry.LastTs = &entry.NextTs
+					entry.NextTs = nextTs
+				} else {
+					entry.IsActive = false
+				}
+				err = scheduler.update(entry)
+				if err != nil {
+					slog.Error("db", "error", err)
+					panic(err)
 				}
 				slog.Info("tik ", "entry", entry.Id, "nextTs", entry.NextTs)
 			}
 			scheduler.scheduleNext()
 		case <-reloader.C:
-			// err = scheduler.reload()
-			// if err != nil {
-			// 	slog.Error("db", "error", err)
-			// 	panic(err)
-			// }
+			err = scheduler.reload()
+			if err != nil {
+				slog.Error("db", "error", err)
+				panic(err)
+			}
 		}
 	}
 }
@@ -130,6 +137,15 @@ func (scheduler *Scheduler) reload() error {
 		return err
 	}
 	scheduler.entries = entries
+	if scheduler.entry != nil {
+		entry2 := scheduler.entries[scheduler.entry.Id]
+		if entry2.NextTs.Equal(scheduler.entry.NextTs) {
+			scheduler.entry = entry2
+		} else {
+			slog.Info("RESCHEDULE", "id", scheduler.entry.Id, "t1", entry2.NextTs, "t2", scheduler.entry.NextTs)
+			scheduler.scheduleNext()
+		}
+	}
 	return nil
 }
 
@@ -142,8 +158,8 @@ func (scheduler *Scheduler) scheduleNext() {
 
 	var d time.Duration
 	if next != nil {
-		d = time.Until(*next.NextTs)
-		slog.Info("next", "entry", next.Id)
+		d = time.Until(next.NextTs)
+		slog.Info("next", "entry", next.Id, "nextTs", next.NextTs)
 	} else {
 		d = 1 * time.Second
 		slog.Info("next", "entry", nil)
@@ -166,7 +182,7 @@ func (scheduler *Scheduler) getNext() *Entry {
 			// slog.Info("=> ", "next", next.NextTs)
 		} else {
 			// slog.Info("=> ", "next", next.NextTs, "entry", entry.NextTs)
-			if entry.NextTs.Before(*next.NextTs) {
+			if entry.NextTs.Before(next.NextTs) {
 				next = entry
 			}
 		}
@@ -281,8 +297,10 @@ func (scheduler *Scheduler) update(entry *Entry) error {
 
 	slog.Info("update the entry", "entry", entry)
 	res, err := db.Exec(
-		`update barn_entry set next_ts=?, last_ts=? where id=?`,
-		entry.NextTs, entry.LastTs, entry.Id,
+		`update barn_entry 
+		set is_active=?, next_ts=?, last_ts=? 
+		where id=?`,
+		entry.IsActive, entry.NextTs, entry.LastTs, entry.Id,
 	)
 	if err != nil {
 		return err
