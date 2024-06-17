@@ -86,8 +86,6 @@ func main() {
 		Addr:    ":8000",
 		Handler: r,
 	}
-	s.ListenAndServe()
-
 	if err := s.ListenAndServe(); err != nil {
 		logger.Panic("Failed", zap.Error(err))
 	} else {
