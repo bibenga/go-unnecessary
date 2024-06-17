@@ -89,30 +89,20 @@ func (scheduler *Scheduler) Run() {
 	reloader := time.NewTicker(5 * time.Second)
 	defer reloader.Stop()
 
-	// scheduler.timer = time.NewTimer(1 * time.Second)
-	// scheduler.scheduleNext()
+	scheduler.timer = time.NewTimer(1 * time.Second)
+	defer scheduler.timer.Stop()
+
+	scheduler.scheduleNext()
 
 	for {
-		// timer := scheduler.timer
-		entry := scheduler.getNext()
-		var timer *time.Timer
-		if entry == nil {
-			timer = time.NewTimer(1 * time.Second)
-		} else {
-			timer = time.NewTimer(time.Until(*entry.NextTs))
-		}
-		defer timer.Stop()
-
 		select {
 		case <-scheduler.stop:
 			slog.Info("terminate")
 			scheduler.stopped <- struct{}{}
 			return
-		case <-timer.C:
-			id := -1
-			// entry := scheduler.entry
+		case <-scheduler.timer.C:
+			entry := scheduler.entry
 			if entry != nil {
-				id = int(entry.Id)
 				if entry.Cron != nil {
 					nextTs, err := gronx.NextTick(*entry.Cron, false)
 					if err != nil {
@@ -121,10 +111,10 @@ func (scheduler *Scheduler) Run() {
 					entry.LastTs = entry.NextTs
 					entry.NextTs = &nextTs
 				}
+				slog.Info("tik ", "entry", entry.Id, "nextTs", entry.NextTs)
 			}
-			slog.Info("tik", "entry", id)
+			scheduler.scheduleNext()
 		case <-reloader.C:
-			timer.Stop()
 			// err = scheduler.reload()
 			// if err != nil {
 			// 	slog.Error("db", "error", err)
@@ -143,6 +133,31 @@ func (scheduler *Scheduler) reload() error {
 	return nil
 }
 
+func (scheduler *Scheduler) scheduleNext() {
+	var next *Entry = scheduler.getNext()
+	// if next != nil && scheduler.entry != nil && next.Id == scheduler.entry.Id {
+	// 	return
+	// }
+	scheduler.entry = next
+
+	var d time.Duration
+	if next != nil {
+		d = time.Until(*next.NextTs)
+		slog.Info("next", "entry", next.Id)
+	} else {
+		d = 1 * time.Second
+		slog.Info("next", "entry", nil)
+	}
+
+	// scheduler.timer.Reset(time.Since(*next.NextTs))
+	scheduler.timer.Stop()
+	select {
+	case <-scheduler.timer.C:
+	default:
+	}
+	scheduler.timer.Reset(d)
+}
+
 func (scheduler *Scheduler) getNext() *Entry {
 	var next *Entry = nil
 	for _, entry := range scheduler.entries {
@@ -157,31 +172,6 @@ func (scheduler *Scheduler) getNext() *Entry {
 		}
 	}
 	return next
-}
-
-func (scheduler *Scheduler) scheduleNext() {
-	var next *Entry = nil
-	for _, entry := range scheduler.entries {
-		if next == nil {
-			next = entry
-			// slog.Info("=> ", "next", next.NextTs)
-		} else {
-			// slog.Info("=> ", "next", next.NextTs, "entry", entry.NextTs)
-			if entry.NextTs.Before(*next.NextTs) {
-				next = entry
-			}
-		}
-	}
-
-	if next != nil {
-		// scheduler.timer.Reset(time.Since(*next.NextTs))
-		// scheduler.entry = next
-		// slog.Info("next", "entry", next.Id)
-	} else {
-		// scheduler.timer.Reset(1 * time.Second)
-		// scheduler.entry = nil
-		// slog.Info("next", "entry", nil)
-	}
 }
 
 func (scheduler *Scheduler) getEntries() (EntryMap, error) {

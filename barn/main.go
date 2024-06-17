@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"time"
 
 	"unnecessary/barn/barn"
 
@@ -44,10 +45,10 @@ func main() {
 		panic(err)
 	}
 
-	// nextTs2 := time.Now().Add(20 * time.Second)
+	nextTs2 := time.Now().Add(-20 * time.Second)
 	// err = scheduler.Add("olala2", nil, &nextTs2)
 	cron2 := "*/10 * * * * *"
-	err = scheduler.Add("olala2", &cron2, nil)
+	err = scheduler.Add("olala2", &cron2, &nextTs2)
 	if err != nil {
 		slog.Error("db error", "error", err)
 		panic(err)
