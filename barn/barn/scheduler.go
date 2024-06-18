@@ -12,11 +12,33 @@ import (
 type Entry struct {
 	Id       int32
 	Name     string
-	Cron     *string
 	IsActive bool
+	Cron     *string
 	NextTs   *time.Time
 	LastTs   *time.Time
 	Message  *string
+}
+
+func (e Entry) LogValue() slog.Value {
+	// return slog.AnyValue(computeExpensiveValue(e.arg))
+	var args []slog.Attr
+	args = append(args, slog.Int("Id", int(e.Id)))
+	args = append(args, slog.Bool("IsActive", e.IsActive))
+	if e.Cron != nil {
+		args = append(args, slog.String("Cron", *e.Cron))
+	}
+	if e.NextTs != nil {
+		args = append(args, slog.Any("NextTs", *e.NextTs))
+	}
+	return slog.GroupValue(
+		// slog.Int("Id", int(e.Id)),
+		// // slog.String("Name", e.Name),
+		// slog.Bool("IsActive", e.IsActive),
+		// // slog.Any("Cron", e.Cron),
+		// // slog.Any("NextTs", e.NextTs),
+		// // slog.Any("Message", e.Message),
+		args...,
+	)
 }
 
 type EntryMap map[int32]*Entry
@@ -31,6 +53,8 @@ type Scheduler struct {
 }
 
 func NewScheduler(db *sql.DB) *Scheduler {
+	logger := slog.Default().With("a", 1)
+	logger.Info("created")
 	manager := Scheduler{
 		entries: make(EntryMap),
 		db:      db,
@@ -121,11 +145,11 @@ func (scheduler *Scheduler) Run() {
 			}
 			scheduler.scheduleNext()
 		case <-reloader.C:
-			// err = scheduler.reload()
-			// if err != nil {
-			// 	slog.Error("db", "error", err)
-			// 	panic(err)
-			// }
+			err = scheduler.reload()
+			if err != nil {
+				slog.Error("db", "error", err)
+				panic(err)
+			}
 		}
 	}
 }
