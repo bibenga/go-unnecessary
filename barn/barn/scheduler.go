@@ -93,17 +93,20 @@ func (scheduler *Scheduler) Stop() {
 }
 
 func (scheduler *Scheduler) Run() {
-	db := scheduler.db
-	stmt, err := db.Prepare(`select id, name, is_active, cron, next_ts, last_ts, message from barn_entry`)
-	if err != nil {
-		slog.Error("db", "error", err)
-		panic(err)
-	}
-	defer stmt.Close()
+	// db := scheduler.db
+	// stmt, err := db.Prepare(
+	// 	`select id, name, is_active, cron, next_ts, last_ts, message
+	// 	from barn_entry`,
+	// )
+	// if err != nil {
+	// 	slog.Error("db", "error", err)
+	// 	panic(err)
+	// }
+	// defer stmt.Close()
 
 	slog.Info("started")
 
-	err = scheduler.reload()
+	err := scheduler.reload()
 	if err != nil {
 		slog.Error("db", "error", err)
 		panic(err)
@@ -112,9 +115,13 @@ func (scheduler *Scheduler) Run() {
 	reloader := time.NewTicker(5 * time.Second)
 	defer reloader.Stop()
 
+	// I don't know how to be
 	scheduler.timer = time.NewTimer(1 * time.Second)
 	defer scheduler.timer.Stop()
-
+	select {
+	case <-scheduler.timer.C:
+	default:
+	}
 	scheduler.scheduleNext()
 
 	for {
@@ -126,6 +133,9 @@ func (scheduler *Scheduler) Run() {
 		case <-scheduler.timer.C:
 			entry := scheduler.entry
 			if entry != nil {
+				// process
+				slog.Info("tik ", "entry", entry.Id, "nextTs", entry.NextTs)
+				// calculate next time
 				if entry.Cron != nil {
 					nextTs, err := gronx.NextTick(*entry.Cron, false)
 					if err != nil {
@@ -141,7 +151,6 @@ func (scheduler *Scheduler) Run() {
 					slog.Error("db", "error", err)
 					panic(err)
 				}
-				slog.Info("tik ", "entry", entry.Id, "nextTs", entry.NextTs)
 			}
 			scheduler.scheduleNext()
 		case <-reloader.C:
@@ -251,7 +260,10 @@ func (scheduler *Scheduler) getNext() *Entry {
 
 func (scheduler *Scheduler) getEntries() (EntryMap, error) {
 	db := scheduler.db
-	stmt, err := db.Prepare(`select id, name, is_active, cron, next_ts, last_ts, message from barn_entry`)
+	stmt, err := db.Prepare(
+		`select id, name, is_active, cron, next_ts, last_ts, message 
+		from barn_entry`,
+	)
 	if err != nil {
 		return nil, err
 	}
