@@ -10,8 +10,16 @@ import (
 
 	"unnecessary/barn/barn"
 
-	_ "github.com/mattn/go-sqlite3"
+	// _ "github.com/mattn/go-sqlite3"
+	_ "github.com/jackc/pgx/v5/stdlib"
+	_ "github.com/lib/pq"
 )
+
+// const driver string = "sqlite3"
+// const dsn string = "file:barn/_barn.db?cache=shared&mode=rwc&_journal_mode=WAL&_loc=UTC"
+
+const driver string = "pgx"
+const dsn string = "host=host.docker.internal port=5432 user=rds password=sqlsql dbname=barn TimeZone=UTC sslmode=disable"
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile | log.Lmsgprefix)
@@ -19,10 +27,11 @@ func main() {
 
 	slog.Info("Hello")
 
-	os.Remove("./barn/_barn.db")
+	// os.Remove("./barn/_barn.db")
 
 	// db, err := sql.Open("sqlite3", "./barn/_barn.db")
-	db, err := sql.Open("sqlite3", "file:barn/_barn.db?cache=shared&mode=rwc&_journal_mode=WAL&_loc=UTC")
+	// db, err := sql.Open("sqlite3", "file:barn/_barn.db?cache=shared&mode=rwc&_journal_mode=WAL&_loc=UTC")
+	db, err := sql.Open(driver, dsn)
 	if err != nil {
 		slog.Error("db error", "error", err)
 		panic(err)
@@ -34,6 +43,12 @@ func main() {
 
 	scheduler := barn.NewScheduler(db)
 	err = scheduler.InitializeDB()
+	if err != nil {
+		slog.Error("db error", "error", err)
+		panic(err)
+	}
+
+	err = scheduler.DeleteAll()
 	if err != nil {
 		slog.Error("db error", "error", err)
 		panic(err)
