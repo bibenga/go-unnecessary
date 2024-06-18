@@ -33,8 +33,6 @@ func main() {
 	log.SetFlags(log.Ltime | log.Lmicroseconds)
 	log.SetPrefix("")
 
-	slog.Info("Hello")
-
 	// os.Remove("./barn/_barn.db")
 
 	// db, err := sql.Open("sqlite3", "./barn/_barn.db")
