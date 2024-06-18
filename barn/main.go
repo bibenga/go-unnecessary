@@ -21,7 +21,8 @@ func main() {
 
 	os.Remove("./barn/_barn.db")
 
-	db, err := sql.Open("sqlite3", "./barn/_barn.db")
+	// db, err := sql.Open("sqlite3", "./barn/_barn.db")
+	db, err := sql.Open("sqlite3", "file:barn/_barn.db?cache=shared&mode=rwc&_journal_mode=WAL")
 	if err != nil {
 		slog.Error("db error", "error", err)
 		panic(err)
