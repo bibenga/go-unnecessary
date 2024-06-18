@@ -116,7 +116,11 @@ func (manager *LockManager) run() {
 
 func (manager *LockManager) isExist() bool {
 	db := manager.db
-	stmt, err := db.Prepare(`select 1 from barn_lock where name = ? limit 1`)
+	stmt, err := db.Prepare(
+		`select 1 
+		from barn_lock 
+		where name = $1 
+		limit 1`)
 	if err != nil {
 		slog.Error("cannot prepare query", "error", err)
 		panic(err)
@@ -149,7 +153,7 @@ func (manager *LockManager) create() {
 
 	res, err := tx.Exec(
 		`insert into barn_lock(name, locked_at, locked_by) 
-		values (?, ?, ?) 
+		values ($1, $2, $3) 
 		on conflict (name) do nothing`,
 		manager.lockName, time.Now().Add((-300*24)*time.Hour), "",
 	)
@@ -177,7 +181,11 @@ func (manager *LockManager) create() {
 
 func (manager *LockManager) getDbLock() *Lock {
 	db := manager.db
-	stmt, err := db.Prepare(`select locked_at, locked_by from barn_lock where name = ?`)
+	stmt, err := db.Prepare(
+		`select locked_at, locked_by 
+		from barn_lock 
+		where name = $1`,
+	)
 	if err != nil {
 		slog.Error("cannot prepare query", "error", err)
 		panic(err)
@@ -202,8 +210,8 @@ func (manager *LockManager) tryUpdate(dbLock *Lock) bool {
 	db := manager.db
 	res, err := db.Exec(
 		`update barn_lock 
-		set locked_at=?, locked_by=? 
-		where name=? and locked_by=? and locked_at=?`,
+		set locked_at=$1, locked_by=$2 
+		where name=$3 and locked_by=$4 and locked_at=$5`,
 		time.Now(), manager.hostname,
 		manager.lockName, dbLock.LockedBy, dbLock.LockedAt,
 	)

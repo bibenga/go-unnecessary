@@ -11,8 +11,15 @@ import (
 	"unnecessary/barn/barn"
 
 	// _ "github.com/mattn/go-sqlite3"
-	_ "github.com/jackc/pgx/v5/stdlib"
-	_ "github.com/lib/pq"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/jackc/pgx/v5/tracelog"
+	pgxslog "github.com/mcosta74/pgx-slog"
+	// github.com/mcosta74/pgx-slog
+	// _ "github.com/jackc/pgx/v5/stdlib"
+	// "github.com/jackc/pgx/v5/tracelog"
+	// _ "github.com/lib/pq"
 )
 
 // const driver string = "sqlite3"
@@ -32,7 +39,20 @@ func main() {
 
 	// db, err := sql.Open("sqlite3", "./barn/_barn.db")
 	// db, err := sql.Open("sqlite3", "file:barn/_barn.db?cache=shared&mode=rwc&_journal_mode=WAL&_loc=UTC")
-	db, err := sql.Open(driver, dsn)
+
+	connConfig, err := pgx.ParseConfig(dsn)
+	if err != nil {
+		slog.Error("db config errorz", "error", err)
+		panic(err)
+	}
+	connConfig.Tracer = &tracelog.TraceLog{
+		Logger:   pgxslog.NewLogger(slog.Default()),
+		LogLevel: tracelog.LogLevelDebug,
+	}
+	connStr := stdlib.RegisterConnConfig(connConfig)
+	db, err := sql.Open(driver, connStr)
+
+	// db, err := sql.Open(driver, dsn)
 	if err != nil {
 		slog.Error("db error", "error", err)
 		panic(err)
@@ -72,17 +92,17 @@ func main() {
 	}
 	go scheduler.Run()
 
-	// manager := barn.NewLockManager(db)
-	// err = manager.InitializeDB()
-	// if err != nil {
-	// 	slog.Error("db error", "error", err)
-	// 	panic(err)
-	// }
+	manager := barn.NewLockManager(db)
+	err = manager.InitializeDB()
+	if err != nil {
+		slog.Error("db error", "error", err)
+		panic(err)
+	}
 	// go manager.Run()
 
 	s := <-osSignal
 	slog.Info("os signal received", "signal", s)
 
 	// manager.Stop()
-	scheduler.Stop()
+	// scheduler.Stop()
 }
