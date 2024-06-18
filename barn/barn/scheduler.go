@@ -19,7 +19,7 @@ type Entry struct {
 	Message  *string
 }
 
-func (e Entry) LogValue() slog.Value {
+func (e *Entry) LogValue() slog.Value {
 	// return slog.AnyValue(computeExpensiveValue(e.arg))
 	var args []slog.Attr
 	args = append(args, slog.Int("Id", int(e.Id)))
@@ -39,6 +39,30 @@ func (e Entry) LogValue() slog.Value {
 		// // slog.Any("Message", e.Message),
 		args...,
 	)
+}
+
+func (e *Entry) IsChanged(o *Entry) bool {
+	if e.Cron != nil && o.Cron != nil {
+		if *e.Cron != *o.Cron {
+			slog.Info("1 - changed entry", "Cron1", e.Cron, "Cron2", o.Cron)
+			return true
+		}
+	} else if (e.Cron == nil && o.Cron != nil) || (e.Cron != nil && o.Cron == nil) {
+		slog.Info("2 - changed entry", "cron1", e.Cron, "cron2", o.Cron)
+		return true
+	}
+
+	if e.NextTs != nil && o.NextTs != nil {
+		if *e.NextTs != *o.NextTs {
+			slog.Info("3 - changed entry", "NextTs1", e.NextTs, "NextTs2", o.NextTs)
+			return true
+		}
+	} else if (e.NextTs == nil && o.NextTs != nil) || (e.NextTs != nil && o.NextTs == nil) {
+		slog.Info("4 - changed entry", "NextTs1", e.NextTs, "NextTs2", o.NextTs)
+		return true
+	}
+
+	return false
 }
 
 type EntryMap map[int32]*Entry
@@ -71,10 +95,10 @@ func (scheduler *Scheduler) InitializeDB() error {
 	CREATE TABLE  IF NOT EXISTS "barn_entry" (
         id INTEGER NOT NULL, 
         name VARCHAR NOT NULL, 
-        is_active BOOLEAN DEFAULT True NOT NULL, 
+        is_active BOOLEAN DEFAULT TRUE NOT NULL, 
         cron VARCHAR, 
-        next_ts TIMESTAMP, 
-        last_ts TIMESTAMP, 
+        next_ts TIMESTAMP WITH TIME ZONE, 
+        last_ts TIMESTAMP WITH TIME ZONE, 
         message JSON, 
         PRIMARY KEY (id), 
         UNIQUE (name)
@@ -131,33 +155,17 @@ func (scheduler *Scheduler) Run() {
 			scheduler.stopped <- struct{}{}
 			return
 		case <-scheduler.timer.C:
-			entry := scheduler.entry
-			if entry != nil {
-				// process
-				slog.Info("tik ", "entry", entry.Id, "nextTs", entry.NextTs)
-				// calculate next time
-				if entry.Cron != nil {
-					nextTs, err := gronx.NextTick(*entry.Cron, false)
-					if err != nil {
-						panic(err)
-					}
-					entry.LastTs = entry.NextTs
-					entry.NextTs = &nextTs
-				} else {
-					entry.IsActive = false
-				}
-				err = scheduler.update(entry)
-				if err != nil {
-					slog.Error("db", "error", err)
-					panic(err)
-				}
+			err = scheduler.processEntry()
+			if err != nil {
+				slog.Error("db", "error", err)
+				// panic(err)
 			}
 			scheduler.scheduleNext()
 		case <-reloader.C:
 			err = scheduler.reload()
 			if err != nil {
 				slog.Error("db", "error", err)
-				panic(err)
+				// panic(err)
 			}
 		}
 	}
@@ -172,23 +180,23 @@ func (scheduler *Scheduler) reload() error {
 	for id, newEntry := range entries {
 		if oldEntry, ok := scheduler.entries[id]; ok {
 			// exists
-			if oldEntry.NextTs != newEntry.NextTs || oldEntry.Cron != newEntry.Cron {
+			if oldEntry.IsChanged(newEntry) {
 				// changed
-				slog.Info("changed entry", "entry", newEntry.Id)
-				oldEntry.Cron = newEntry.Cron
-				oldEntry.Message = newEntry.Message
+				slog.Info("changed entry", "entry", newEntry)
 				if newEntry.NextTs == nil {
 					nextTs2, err := gronx.NextTick(*newEntry.Cron, true)
 					if err != nil {
 						return err
 					}
-					oldEntry.NextTs = &nextTs2
-				} else {
-					oldEntry.NextTs = newEntry.NextTs
+					newEntry.NextTs = &nextTs2
 				}
-				scheduler.update(oldEntry)
+				scheduler.entries[id] = newEntry
+
+				scheduler.entry = nil
+			} else {
+				oldEntry.Name = newEntry.Name
+				oldEntry.Message = newEntry.Message
 			}
-			oldEntry.Name = newEntry.Name
 		} else {
 			// added
 			slog.Info("new entry", "entry", newEntry.Id)
@@ -207,10 +215,10 @@ func (scheduler *Scheduler) reload() error {
 
 	if scheduler.entry != nil {
 		entry2 := scheduler.entries[scheduler.entry.Id]
-		if entry2.NextTs.Equal(*scheduler.entry.NextTs) {
-			scheduler.entry = entry2
-		} else {
-			slog.Info("RESCHEDULE", "id", scheduler.entry.Id, "t1", entry2.NextTs, "t2", scheduler.entry.NextTs)
+		slog.Info("RESCHEDULE", "entry", scheduler.entry, "entry2", entry2)
+		if entry2 != scheduler.entry {
+			// object changed
+			slog.Info("RESCHEDULE", "entry", scheduler.entry)
 			scheduler.scheduleNext()
 		}
 	}
@@ -258,6 +266,32 @@ func (scheduler *Scheduler) getNext() *Entry {
 	return next
 }
 
+func (scheduler *Scheduler) processEntry() error {
+	entry := scheduler.entry
+	if entry != nil {
+		// process
+		slog.Info("tik ", "entry", entry.Id, "nextTs", entry.NextTs)
+		// calculate next time
+		if entry.Cron != nil {
+			nextTs, err := gronx.NextTick(*entry.Cron, false)
+			if err != nil {
+				slog.Info("cron is invalid", "entry", entry)
+				entry.IsActive = false
+			} else {
+				entry.LastTs = entry.NextTs
+				entry.NextTs = &nextTs
+			}
+		} else {
+			entry.IsActive = false
+		}
+		err := scheduler.update(entry)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (scheduler *Scheduler) getEntries() (EntryMap, error) {
 	db := scheduler.db
 	stmt, err := db.Prepare(
@@ -277,7 +311,19 @@ func (scheduler *Scheduler) getEntries() (EntryMap, error) {
 	}
 	for rows.Next() {
 		var e Entry = Entry{}
-		err := rows.Scan(&e.Id, &e.Name, &e.IsActive, &e.Cron, &e.NextTs, &e.LastTs, &e.Message)
+		var nextTs, lastTs *string
+		err := rows.Scan(&e.Id, &e.Name, &e.IsActive, &e.Cron, &nextTs, &lastTs, &e.Message)
+		if nextTs != nil {
+			// RFC3339     = "2006-01-02T15:04:05Z07:00"
+			// RFC3339Nano = "2006-01-02T15:04:05.999999999Z07:00"
+			// layout := "2006-01-02 15:04:05.999999999+77:00"
+			layout := time.RFC3339
+			nextTs2, err := time.Parse(layout, *nextTs)
+			if err != nil {
+				return nil, err
+			}
+			e.NextTs = &nextTs2
+		}
 		if err != nil {
 			return nil, err
 		}

@@ -17,6 +17,13 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/api-huma/apihuma.go"
+        },
+        {
+            "name": "barn",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/barn/main.go"
         }
     ]
 }

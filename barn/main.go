@@ -22,7 +22,7 @@ func main() {
 	os.Remove("./barn/_barn.db")
 
 	// db, err := sql.Open("sqlite3", "./barn/_barn.db")
-	db, err := sql.Open("sqlite3", "file:barn/_barn.db?cache=shared&mode=rwc&_journal_mode=WAL")
+	db, err := sql.Open("sqlite3", "file:barn/_barn.db?cache=shared&mode=rwc&_journal_mode=WAL&_loc=UTC")
 	if err != nil {
 		slog.Error("db error", "error", err)
 		panic(err)
@@ -46,7 +46,7 @@ func main() {
 		panic(err)
 	}
 
-	nextTs2 := time.Now().Add(-20 * time.Second)
+	nextTs2 := time.Now().UTC().Add(-20 * time.Second)
 	// err = scheduler.Add("olala2", nil, &nextTs2)
 	cron2 := "*/10 * * * * *"
 	err = scheduler.Add("olala2", &cron2, &nextTs2, "{\"type\":\"olala2\"}")
