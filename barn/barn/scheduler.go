@@ -2,7 +2,6 @@ package barn
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"time"
@@ -122,11 +121,11 @@ func (scheduler *Scheduler) Run() {
 			}
 			scheduler.scheduleNext()
 		case <-reloader.C:
-			err = scheduler.reload()
-			if err != nil {
-				slog.Error("db", "error", err)
-				panic(err)
-			}
+			// err = scheduler.reload()
+			// if err != nil {
+			// 	slog.Error("db", "error", err)
+			// 	panic(err)
+			// }
 		}
 	}
 }
@@ -144,6 +143,7 @@ func (scheduler *Scheduler) reload() error {
 				// changed
 				slog.Info("changed entry", "entry", newEntry.Id)
 				oldEntry.Cron = newEntry.Cron
+				oldEntry.Message = newEntry.Message
 				if newEntry.NextTs == nil {
 					nextTs2, err := gronx.NextTick(*newEntry.Cron, true)
 					if err != nil {
@@ -246,9 +246,14 @@ func (scheduler *Scheduler) getEntries() (EntryMap, error) {
 			return nil, err
 		}
 		if e.IsActive {
-			if e.Cron == nil && e.NextTs == nil {
-				// invalid
+			if e.Message == nil {
+				// we don't know what to do...
 				slog.Warn("invalid entry", "entry", e)
+				scheduler.deactivate(&e)
+			} else if e.Cron == nil && e.NextTs == nil {
+				// we don't know when to do...
+				slog.Warn("invalid entry", "entry", e)
+				scheduler.deactivate(&e)
 			} else {
 				if e.NextTs == nil {
 					nextTs2, err := gronx.NextTick(*e.Cron, true)
@@ -257,18 +262,19 @@ func (scheduler *Scheduler) getEntries() (EntryMap, error) {
 						continue
 					}
 					e.NextTs = &nextTs2
+					scheduler.update(&e)
 				}
-				slog.Info("active entry", "entry", e)
+				slog.Info("the entry is active", "entry", e)
 				entries[e.Id] = &e
 			}
 		} else {
-			slog.Info("inactive entry", "entry", e)
+			slog.Info("the entry is inactive", "entry", e)
 		}
 	}
 	return entries, nil
 }
 
-func (scheduler *Scheduler) Add(name string, cron *string, nextTs *time.Time) error {
+func (scheduler *Scheduler) Add(name string, cron *string, nextTs *time.Time, message string) error {
 	// fake 1
 	// cron := "*/5 * * * * *"
 
@@ -283,25 +289,9 @@ func (scheduler *Scheduler) Add(name string, cron *string, nextTs *time.Time) er
 	// 	nextTs = &nextTs2
 	// }
 
-	// fake 2
-	var message *string = nil
-	if name == "olala1" {
-		var m = make(map[string]interface{})
-		m["extra"] = 1
-		b, err := json.Marshal(m)
-		if err != nil {
-			return err
-		}
-		m2 := string(b)
-		message = &m2
-	}
-	db := scheduler.db
-	if message != nil {
-		slog.Info("create the entry", "name", name, "cron", cron, "message", *message)
-	} else {
-		slog.Info("create the entry", "name", name, "cron", cron, "message", message)
-	}
+	slog.Info("create the entry", "name", name, "cron", cron, "message", message)
 
+	db := scheduler.db
 	stmt, err := db.Prepare(
 		`insert into barn_entry(name, cron, next_ts, message) 
 		values (?, ?, ?, ?) 
@@ -337,7 +327,7 @@ func (scheduler *Scheduler) Delete(id int) error {
 		return err
 	}
 	if rowsAffected != 1 {
-		return fmt.Errorf("an object does not exist")
+		slog.Info("the entry was already deleted", "entry", id)
 	}
 	return nil
 }
@@ -360,7 +350,32 @@ func (scheduler *Scheduler) update(entry *Entry) error {
 		return err
 	}
 	if rowsAffected != 1 {
+		// not an erros, need to reload entries...
 		return fmt.Errorf("an object deleted")
+	}
+	return nil
+}
+
+func (scheduler *Scheduler) deactivate(entry *Entry) error {
+	db := scheduler.db
+
+	entry.IsActive = false
+	slog.Info("deactivate the entry", "entry", entry)
+	res, err := db.Exec(
+		`update barn_entry 
+		set is_active=? 
+		where id=?`,
+		false, entry.Id,
+	)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected != 1 {
+		slog.Info("the entry was deleted somewhen", "entry", entry)
 	}
 	return nil
 }

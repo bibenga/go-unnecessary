@@ -39,7 +39,7 @@ func main() {
 	}
 
 	cron1 := "*/5 * * * * *"
-	err = scheduler.Add("olala1", &cron1, nil)
+	err = scheduler.Add("olala1", &cron1, nil, "{\"type\":\"olala1\"}")
 	if err != nil {
 		slog.Error("db error", "error", err)
 		panic(err)
@@ -48,7 +48,7 @@ func main() {
 	nextTs2 := time.Now().Add(-20 * time.Second)
 	// err = scheduler.Add("olala2", nil, &nextTs2)
 	cron2 := "*/10 * * * * *"
-	err = scheduler.Add("olala2", &cron2, &nextTs2)
+	err = scheduler.Add("olala2", &cron2, &nextTs2, "{\"type\":\"olala2\"}")
 	if err != nil {
 		slog.Error("db error", "error", err)
 		panic(err)
