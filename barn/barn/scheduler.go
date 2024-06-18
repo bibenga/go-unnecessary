@@ -28,7 +28,7 @@ func (e Entry) LogValue() slog.Value {
 		args = append(args, slog.String("Cron", *e.Cron))
 	}
 	if e.NextTs != nil {
-		args = append(args, slog.Any("NextTs", *e.NextTs))
+		args = append(args, slog.String("NextTs", e.NextTs.String()))
 	}
 	return slog.GroupValue(
 		// slog.Int("Id", int(e.Id)),
