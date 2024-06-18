@@ -15,7 +15,7 @@ type Entry struct {
 	Name     string
 	Cron     *string
 	IsActive bool
-	NextTs   time.Time
+	NextTs   *time.Time
 	LastTs   *time.Time
 	Message  *string
 }
@@ -23,8 +23,8 @@ type Entry struct {
 type EntryMap map[int32]*Entry
 
 type Scheduler struct {
-	db      *sql.DB
 	entries EntryMap
+	db      *sql.DB
 	stop    chan struct{}
 	stopped chan struct{}
 	timer   *time.Timer
@@ -33,8 +33,8 @@ type Scheduler struct {
 
 func NewScheduler(db *sql.DB) *Scheduler {
 	manager := Scheduler{
+		entries: make(EntryMap),
 		db:      db,
-		entries: nil,
 		stop:    make(chan struct{}),
 		stopped: make(chan struct{}),
 	}
@@ -108,8 +108,8 @@ func (scheduler *Scheduler) Run() {
 					if err != nil {
 						panic(err)
 					}
-					entry.LastTs = &entry.NextTs
-					entry.NextTs = nextTs
+					entry.LastTs = entry.NextTs
+					entry.NextTs = &nextTs
 				} else {
 					entry.IsActive = false
 				}
@@ -136,10 +136,45 @@ func (scheduler *Scheduler) reload() error {
 	if err != nil {
 		return err
 	}
-	scheduler.entries = entries
+
+	for id, newEntry := range entries {
+		if oldEntry, ok := scheduler.entries[id]; ok {
+			// exists
+			if oldEntry.NextTs != newEntry.NextTs || oldEntry.Cron != newEntry.Cron {
+				// changed
+				slog.Info("changed entry", "entry", newEntry.Id)
+				oldEntry.Cron = newEntry.Cron
+				if newEntry.NextTs == nil {
+					nextTs2, err := gronx.NextTick(*newEntry.Cron, true)
+					if err != nil {
+						return err
+					}
+					oldEntry.NextTs = &nextTs2
+				} else {
+					oldEntry.NextTs = newEntry.NextTs
+				}
+				scheduler.update(oldEntry)
+			}
+			oldEntry.Name = newEntry.Name
+		} else {
+			// added
+			slog.Info("new entry", "entry", newEntry.Id)
+			scheduler.entries[id] = newEntry
+		}
+	}
+
+	for id, oldEntry := range scheduler.entries {
+		if _, ok := entries[id]; !ok {
+			slog.Info("deleted entry", "entry", oldEntry.Id)
+			delete(scheduler.entries, oldEntry.Id)
+		}
+	}
+
+	// scheduler.entries = entries
+
 	if scheduler.entry != nil {
 		entry2 := scheduler.entries[scheduler.entry.Id]
-		if entry2.NextTs.Equal(scheduler.entry.NextTs) {
+		if entry2.NextTs.Equal(*scheduler.entry.NextTs) {
 			scheduler.entry = entry2
 		} else {
 			slog.Info("RESCHEDULE", "id", scheduler.entry.Id, "t1", entry2.NextTs, "t2", scheduler.entry.NextTs)
@@ -158,7 +193,7 @@ func (scheduler *Scheduler) scheduleNext() {
 
 	var d time.Duration
 	if next != nil {
-		d = time.Until(next.NextTs)
+		d = time.Until(*next.NextTs)
 		slog.Info("next", "entry", next.Id, "nextTs", next.NextTs)
 	} else {
 		d = 1 * time.Second
@@ -182,7 +217,7 @@ func (scheduler *Scheduler) getNext() *Entry {
 			// slog.Info("=> ", "next", next.NextTs)
 		} else {
 			// slog.Info("=> ", "next", next.NextTs, "entry", entry.NextTs)
-			if entry.NextTs.Before(next.NextTs) {
+			if entry.NextTs.Before(*next.NextTs) {
 				next = entry
 			}
 		}
@@ -210,9 +245,24 @@ func (scheduler *Scheduler) getEntries() (EntryMap, error) {
 		if err != nil {
 			return nil, err
 		}
-		slog.Info("loaded", "entry", e)
 		if e.IsActive {
-			entries[e.Id] = &e
+			if e.Cron == nil && e.NextTs == nil {
+				// invalid
+				slog.Warn("invalid entry", "entry", e)
+			} else {
+				if e.NextTs == nil {
+					nextTs2, err := gronx.NextTick(*e.Cron, true)
+					if err != nil {
+						slog.Info("invalid cron string", "entry", e)
+						continue
+					}
+					e.NextTs = &nextTs2
+				}
+				slog.Info("active entry", "entry", e)
+				entries[e.Id] = &e
+			}
+		} else {
+			slog.Info("inactive entry", "entry", e)
 		}
 	}
 	return entries, nil
@@ -225,13 +275,13 @@ func (scheduler *Scheduler) Add(name string, cron *string, nextTs *time.Time) er
 	if cron == nil && nextTs == nil {
 		return fmt.Errorf("invalid args")
 	}
-	if cron != nil && nextTs == nil {
-		nextTs2, err := gronx.NextTick(*cron, true)
-		if err != nil {
-			return err
-		}
-		nextTs = &nextTs2
-	}
+	// if cron != nil && nextTs == nil {
+	// 	nextTs2, err := gronx.NextTick(*cron, true)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	nextTs = &nextTs2
+	// }
 
 	// fake 2
 	var message *string = nil
