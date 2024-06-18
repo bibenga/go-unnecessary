@@ -13,22 +13,22 @@ type Entry struct {
 	Id       int32
 	Name     string
 	IsActive bool
-	Cron     *string
-	NextTs   *time.Time
-	LastTs   *time.Time
-	Message  *string
+	Cron     sql.NullString
+	NextTs   sql.NullTime
+	LastTs   sql.NullTime
+	Message  sql.NullString
 }
 
-func (e *Entry) LogValue() slog.Value {
+func (e Entry) LogValue() slog.Value {
 	// return slog.AnyValue(computeExpensiveValue(e.arg))
 	var args []slog.Attr
 	args = append(args, slog.Int("Id", int(e.Id)))
 	args = append(args, slog.Bool("IsActive", e.IsActive))
-	if e.Cron != nil {
-		args = append(args, slog.String("Cron", *e.Cron))
+	if e.Cron.Valid {
+		args = append(args, slog.String("Cron", e.Cron.String))
 	}
-	if e.NextTs != nil {
-		args = append(args, slog.String("NextTs", e.NextTs.String()))
+	if e.NextTs.Valid {
+		args = append(args, slog.String("NextTs", e.NextTs.Time.String()))
 	}
 	return slog.GroupValue(
 		// slog.Int("Id", int(e.Id)),
@@ -42,23 +42,13 @@ func (e *Entry) LogValue() slog.Value {
 }
 
 func (e *Entry) IsChanged(o *Entry) bool {
-	if e.Cron != nil && o.Cron != nil {
-		if *e.Cron != *o.Cron {
-			slog.Info("1 - changed entry", "Cron1", e.Cron, "Cron2", o.Cron)
-			return true
-		}
-	} else if (e.Cron == nil && o.Cron != nil) || (e.Cron != nil && o.Cron == nil) {
-		slog.Info("2 - changed entry", "cron1", e.Cron, "cron2", o.Cron)
+	if e.Cron != o.Cron {
+		slog.Info("1 - changed entry", "Cron1", e.Cron, "Cron2", o.Cron)
 		return true
 	}
 
-	if e.NextTs != nil && o.NextTs != nil {
-		if *e.NextTs != *o.NextTs {
-			slog.Info("3 - changed entry", "NextTs1", e.NextTs, "NextTs2", o.NextTs)
-			return true
-		}
-	} else if (e.NextTs == nil && o.NextTs != nil) || (e.NextTs != nil && o.NextTs == nil) {
-		slog.Info("4 - changed entry", "NextTs1", e.NextTs, "NextTs2", o.NextTs)
+	if e.NextTs != o.NextTs {
+		slog.Info("3 - changed entry", "NextTs1", e.NextTs, "NextTs2", o.NextTs)
 		return true
 	}
 
@@ -198,12 +188,13 @@ func (scheduler *Scheduler) reload() error {
 			if oldEntry.IsChanged(newEntry) {
 				// changed
 				slog.Info("changed entry", "entry", newEntry)
-				if newEntry.NextTs == nil {
-					nextTs2, err := gronx.NextTick(*newEntry.Cron, true)
+				if !newEntry.NextTs.Valid {
+					nextTs2, err := gronx.NextTick(newEntry.Cron.String, true)
 					if err != nil {
 						return err
 					}
-					newEntry.NextTs = &nextTs2
+					newEntry.NextTs = sql.NullTime{Time: nextTs2, Valid: true}
+					scheduler.update(newEntry)
 				}
 				scheduler.entries[id] = newEntry
 
@@ -230,7 +221,7 @@ func (scheduler *Scheduler) reload() error {
 
 	if scheduler.entry != nil {
 		entry2 := scheduler.entries[scheduler.entry.Id]
-		slog.Info("RESCHEDULE", "entry", scheduler.entry, "entry2", entry2)
+		// slog.Info("RESCHEDULE", "entry", scheduler.entry, "entry2", entry2)
 		if entry2 != scheduler.entry {
 			// object changed
 			slog.Info("RESCHEDULE", "entry", scheduler.entry)
@@ -249,7 +240,7 @@ func (scheduler *Scheduler) scheduleNext() {
 
 	var d time.Duration
 	if next != nil {
-		d = time.Until(*next.NextTs)
+		d = time.Until(next.NextTs.Time)
 		slog.Info("next", "entry", next.Id, "nextTs", next.NextTs)
 	} else {
 		d = 1 * time.Second
@@ -273,7 +264,7 @@ func (scheduler *Scheduler) getNext() *Entry {
 			// slog.Info("=> ", "next", next.NextTs)
 		} else {
 			// slog.Info("=> ", "next", next.NextTs, "entry", entry.NextTs)
-			if entry.NextTs.Before(*next.NextTs) {
+			if entry.NextTs.Time.Before(next.NextTs.Time) {
 				next = entry
 			}
 		}
@@ -287,14 +278,14 @@ func (scheduler *Scheduler) processEntry() error {
 		// process
 		slog.Info("tik ", "entry", entry.Id, "nextTs", entry.NextTs)
 		// calculate next time
-		if entry.Cron != nil {
-			nextTs, err := gronx.NextTick(*entry.Cron, false)
+		if entry.Cron.Valid {
+			nextTs, err := gronx.NextTick(entry.Cron.String, false)
 			if err != nil {
 				slog.Info("cron is invalid", "entry", entry)
 				entry.IsActive = false
 			} else {
 				entry.LastTs = entry.NextTs
-				entry.NextTs = &nextTs
+				entry.NextTs = sql.NullTime{Time: nextTs, Valid: true}
 			}
 		} else {
 			entry.IsActive = false
@@ -343,22 +334,22 @@ func (scheduler *Scheduler) getEntries() (EntryMap, error) {
 			return nil, err
 		}
 		if e.IsActive {
-			if e.Message == nil {
+			if !e.Message.Valid {
 				// we don't know what to do...
 				slog.Warn("invalid entry", "entry", e)
 				scheduler.deactivate(&e)
-			} else if e.Cron == nil && e.NextTs == nil {
+			} else if !e.Cron.Valid && !e.NextTs.Valid {
 				// we don't know when to do...
 				slog.Warn("invalid entry", "entry", e)
 				scheduler.deactivate(&e)
 			} else {
-				if e.NextTs == nil {
-					nextTs2, err := gronx.NextTick(*e.Cron, true)
+				if !e.NextTs.Valid {
+					nextTs2, err := gronx.NextTick(e.Cron.String, true)
 					if err != nil {
 						slog.Info("invalid cron string", "entry", e)
 						continue
 					}
-					e.NextTs = &nextTs2
+					e.NextTs = sql.NullTime{Time: nextTs2, Valid: true}
 					scheduler.update(&e)
 				}
 				slog.Info("the entry is active", "entry", e)

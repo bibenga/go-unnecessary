@@ -22,7 +22,8 @@ const driver string = "pgx"
 const dsn string = "host=host.docker.internal port=5432 user=rds password=sqlsql dbname=barn TimeZone=UTC sslmode=disable"
 
 func main() {
-	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile | log.Lmsgprefix)
+	// log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile | log.Lmsgprefix)
+	log.SetFlags(log.Ltime | log.Lmicroseconds)
 	log.SetPrefix("")
 
 	slog.Info("Hello")
