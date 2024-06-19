@@ -8,18 +8,12 @@ import (
 	"os/signal"
 	"time"
 
-	"unnecessary/barn/barn"
-
-	// _ "github.com/mattn/go-sqlite3"
+	"github.com/bibenga/barn-go"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jackc/pgx/v5/tracelog"
 	pgxslog "github.com/mcosta74/pgx-slog"
-	// github.com/mcosta74/pgx-slog
-	// _ "github.com/jackc/pgx/v5/stdlib"
-	// "github.com/jackc/pgx/v5/tracelog"
-	// _ "github.com/lib/pq"
 )
 
 // const driver string = "sqlite3"

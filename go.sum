@@ -45,6 +45,8 @@ github.com/andybalholm/cascadia v1.2.0 h1:vuRCkM5Ozh/BfmsaTm26kbjm0mIOM3yS5Ek/F5
 github.com/andybalholm/cascadia v1.2.0/go.mod h1:YCyR8vOZT9aZ1CHEd8ap0gMVm2aFgxBp0T0eFw1RUQY=
 github.com/apapsch/go-jsonmerge/v2 v2.0.0 h1:axGnT1gRIfimI7gJifB699GoE/oq+F2MU7Dml6nw9rQ=
 github.com/apapsch/go-jsonmerge/v2 v2.0.0/go.mod h1:lvDnEdqiQrp0O42VQGgmlKpxL1AP2+08jFMw88y4klk=
+github.com/bibenga/barn-go v0.0.0-20240619083757-f196a5b8f77c h1:5VmDT6e+WqSI0G60bUFtKh1Sqmdv65pqZZ+eL+8hWq4=
+github.com/bibenga/barn-go v0.0.0-20240619083757-f196a5b8f77c/go.mod h1:jJtRm18xC9D6ai8PzXeykNU7ePFtYlbmgfV/Ojsbfds=
 github.com/bibenga/gomod1 v0.0.0-20240616183024-b8ba9df80fd6 h1:hzOmhzToiix/Fn9a2nlPpb/03Sn3Mrs6o9GFrpgkG/w=
 github.com/bibenga/gomod1 v0.0.0-20240616183024-b8ba9df80fd6/go.mod h1:+WzaWU7gVzxE7QWi9dsESZi4svVhtB7eCy4oSYqzfxc=
 github.com/bmatcuk/doublestar v1.1.1/go.mod h1:UD6OnuiIn0yFxxA2le/rnRU1G4RaI4UvFv1sNto9p6w=

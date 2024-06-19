@@ -5,7 +5,7 @@ go 1.22.3
 require (
 	firebase.google.com/go/v4 v4.14.1
 	github.com/ThreeDotsLabs/watermill v1.3.5
-	github.com/adhocore/gronx v1.8.1
+	github.com/bibenga/barn-go v0.0.0-20240619083757-f196a5b8f77c
 	github.com/bibenga/gomod1 v0.0.0-20240616183024-b8ba9df80fd6
 	github.com/danielgtaylor/huma/v2 v2.18.0
 	github.com/getkin/kin-openapi v0.125.0
@@ -85,6 +85,7 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/MicahParks/keyfunc v1.9.0 // indirect
 	github.com/NYTimes/gziphandler v1.1.1 // indirect
+	github.com/adhocore/gronx v1.8.1 // indirect
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
