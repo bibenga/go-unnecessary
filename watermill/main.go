@@ -30,6 +30,8 @@ func main() {
 
 	slog.Info("sleep")
 	time.Sleep(3 * time.Second)
+
+	pubSub.Close()
 	slog.Info("terminate")
 }
 
