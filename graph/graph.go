@@ -16,9 +16,11 @@ func main() {
 
 	_ = g.AddEdge(1, 2, graph.EdgeWeight(10))
 	_ = g.AddEdge(1, 3, graph.EdgeWeight(1))
+
 	_ = g.AddEdge(2, 1, graph.EdgeWeight(2))
 	_ = g.AddEdge(2, 3, graph.EdgeWeight(3))
 	_ = g.AddEdge(2, 4, graph.EdgeWeight(3))
+
 	_ = g.AddEdge(3, 4, graph.EdgeWeight(1))
 
 	path, _ := graph.ShortestPath(g, 1, 4)

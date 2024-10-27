@@ -9,6 +9,7 @@ require (
 	github.com/bibenga/gomod1 v0.0.0-20240616190124-94437dec465a
 	github.com/bibenga/humanhash-go v0.1.1
 	github.com/danielgtaylor/huma/v2 v2.18.0
+	github.com/dominikbraun/graph v0.23.0
 	github.com/getkin/kin-openapi v0.126.0
 	github.com/gin-contrib/logger v1.1.2
 	github.com/gin-contrib/requestid v1.0.2
@@ -67,6 +68,7 @@ require (
 	github.com/xitongsys/parquet-go-source v0.0.0-20241021075129-b732d2ac9c9b
 	go.uber.org/zap v1.27.0
 	golang.org/x/net v0.27.0
+	gonum.org/v1/gonum v0.15.1
 	google.golang.org/api v0.187.0
 	gorm.io/datatypes v1.2.1
 	gorm.io/driver/postgres v1.5.9
@@ -99,7 +101,6 @@ require (
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
-	github.com/dominikbraun/graph v0.23.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
