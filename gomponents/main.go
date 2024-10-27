@@ -6,14 +6,14 @@ import (
 	"net/http"
 	"time"
 
-	g "github.com/maragudk/gomponents"
-	hx "github.com/maragudk/gomponents-htmx"
-	hxhttp "github.com/maragudk/gomponents-htmx/http"
-	c "github.com/maragudk/gomponents/components"
-	h "github.com/maragudk/gomponents/html"
-	ghttp "github.com/maragudk/gomponents/http"
-	b "github.com/willoma/bulma-gomponents"
-	e "github.com/willoma/gomplements"
+	// b "github.com/willoma/bulma-gomponents"
+	// e "github.com/willoma/gomplements"
+	g "maragu.dev/gomponents"
+	hx "maragu.dev/gomponents-htmx"
+	hxhttp "maragu.dev/gomponents-htmx/http"
+	c "maragu.dev/gomponents/components"
+	h "maragu.dev/gomponents/html"
+	ghttp "maragu.dev/gomponents/http"
 )
 
 func main() {
