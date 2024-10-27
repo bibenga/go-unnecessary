@@ -11,5 +11,6 @@ func main() {
 	d := time.Duration(f1) * time.Second
 	fmt.Println("d =", d)
 	t = t.Add(d)
-	fmt.Println("t =", t)
+	fmt.Println("Now? =", t)
+	fmt.Println("Weekday =", t.Weekday())
 }
