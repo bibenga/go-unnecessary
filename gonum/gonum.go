@@ -19,19 +19,21 @@ func main() {
 	gs.AddNode(simple.Node(5))
 
 	gs.SetWeightedEdge(gs.NewWeightedEdge(gs.Node(1), gs.Node(2), 1))
-	gs.SetWeightedEdge(gs.NewWeightedEdge(gs.Node(1), gs.Node(5), 1))
+	gs.SetWeightedEdge(gs.NewWeightedEdge(gs.Node(1), gs.Node(3), 1))
+	gs.SetWeightedEdge(gs.NewWeightedEdge(gs.Node(1), gs.Node(4), 1))
+	gs.SetWeightedEdge(gs.NewWeightedEdge(gs.Node(1), gs.Node(5), 100))
 
 	gs.SetWeightedEdge(gs.NewWeightedEdge(gs.Node(2), gs.Node(3), 1))
 	gs.SetWeightedEdge(gs.NewWeightedEdge(gs.Node(2), gs.Node(4), 3))
 	gs.SetWeightedEdge(gs.NewWeightedEdge(gs.Node(2), gs.Node(5), 1))
 
-	gs.SetWeightedEdge(gs.NewWeightedEdge(gs.Node(3), gs.Node(1), 1))
 	gs.SetWeightedEdge(gs.NewWeightedEdge(gs.Node(3), gs.Node(4), 1))
+	gs.SetWeightedEdge(gs.NewWeightedEdge(gs.Node(3), gs.Node(5), 1))
 
 	gs.SetWeightedEdge(gs.NewWeightedEdge(gs.Node(4), gs.Node(5), 1))
 
 	pt := path.DijkstraAllFrom(simple.Node(1), gs)
-	for _, id := range []int64{2, 3, 4} {
+	for _, id := range []int64{2, 3, 4, 5} {
 		p, w := pt.AllTo(id)
 		fmt.Println("p=", p, ";", "w=", w)
 		if math.IsInf(w, -1) {
@@ -40,7 +42,7 @@ func main() {
 	}
 
 	fmt.Println("--------------------")
-	pta := path.YenKShortestPaths(gs, 10, 1, simple.Node(1), simple.Node(5))
+	pta := path.YenKShortestPaths(gs, 10, 10000, simple.Node(1), simple.Node(5))
 	fmt.Println(pta)
 
 	// fmt.Println("--------------------")

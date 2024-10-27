@@ -13,20 +13,27 @@ func main() {
 	_ = g.AddVertex(2)
 	_ = g.AddVertex(3)
 	_ = g.AddVertex(4)
+	_ = g.AddVertex(5)
 
 	_ = g.AddEdge(1, 2, graph.EdgeWeight(10))
 	_ = g.AddEdge(1, 3, graph.EdgeWeight(1))
+	_ = g.AddEdge(1, 4, graph.EdgeWeight(1))
+	_ = g.AddEdge(1, 5, graph.EdgeWeight(100))
 
 	_ = g.AddEdge(2, 1, graph.EdgeWeight(2))
 	_ = g.AddEdge(2, 3, graph.EdgeWeight(3))
 	_ = g.AddEdge(2, 4, graph.EdgeWeight(3))
+	_ = g.AddEdge(2, 5, graph.EdgeWeight(3))
 
 	_ = g.AddEdge(3, 4, graph.EdgeWeight(1))
+	_ = g.AddEdge(3, 5, graph.EdgeWeight(1))
 
-	path, _ := graph.ShortestPath(g, 1, 4)
+	_ = g.AddEdge(4, 5, graph.EdgeWeight(1))
+
+	path, _ := graph.ShortestPath(g, 1, 5)
 	fmt.Println(path)
 
-	paths, _ := graph.AllPathsBetween(g, 1, 4)
+	paths, _ := graph.AllPathsBetween(g, 1, 5)
 	fmt.Println(paths)
 
 	// file, _ := os.Create("./a.gv")
