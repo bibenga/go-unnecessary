@@ -14,7 +14,7 @@ func main() {
 
 	l := slog.Default()
 
-	f, err := os.Open("json/data.json")
+	f, err := os.Open("data.json")
 	if err != nil {
 		l.Error("can't open file", "error", err)
 		return

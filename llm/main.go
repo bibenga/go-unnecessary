@@ -26,7 +26,7 @@ func main() {
 	model := ""
 
 	l.Info("hello")
-	llm, err := llama.New(
+	_, err := llama.New(
 		model,
 		llama.EnableF16Memory,
 		llama.SetContext(128),
