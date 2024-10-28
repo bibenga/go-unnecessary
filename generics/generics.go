@@ -14,6 +14,11 @@ func SumIntsOrFloats[K comparable, V int64 | float32 | float64](m map[K]V) V {
 	return s
 }
 
+type Key struct {
+	p1 int
+	p2 int
+}
+
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile | log.Lmsgprefix)
 	log.SetPrefix("")
@@ -31,4 +36,24 @@ func main() {
 		"second": 2.2,
 	}
 	log.Printf("floats -> %v", SumIntsOrFloats(floats))
+
+	//
+	vector := map[[2]int16]int64{
+		{1, 1}: 1,
+		{2, 2}: 2,
+	}
+	vector[[2]int16{3, 3}] = 3
+	log.Printf("vector -> %v", vector)
+	vector[[2]int16{3, 3}] = 4
+	log.Printf("vector -> %v", vector)
+
+	//
+	vector2 := map[Key]int64{
+		{1, 1}: 1,
+		{2, 2}: 2,
+	}
+	vector2[Key{3, 3}] = 3
+	log.Printf("vector2 -> %v", vector2)
+	vector2[Key{3, 3}] = 4
+	log.Printf("vector2 -> %v", vector2)
 }
