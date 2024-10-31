@@ -60,11 +60,11 @@ func playQuartz() {
 	if err != nil {
 		_l.Panic(err)
 	}
-	fjob := job.NewFunctionJobWithDesc("Check appiations", func(_ context.Context) (int, error) {
+	fjob := job.NewFunctionJobWithDesc(func(_ context.Context) (int, error) {
 		_l.Print("Tik")
 		// panic(errors.New("die!"))
 		return 1, nil
-	})
+	}, "Check appiations")
 	// err = sched.ScheduleJob(fjob, triger)
 	djob := quartz.NewJobDetail(fjob, quartz.NewJobKey("functionJob"))
 	err = sched.ScheduleJob(djob, triger)
