@@ -42,7 +42,7 @@ func main() {
 	log.Info().Msg("Unnecessary2")
 
 	// ------------------------------------------------------------------------------------
-	// https://github.com/deepmap/oapi-codegen
+	// https://github.com/oapi-codegen/oapi-codegen
 	e := echo.New()
 	e.Debug = true
 	e.Logger.SetOutput(root.With().CallerWithSkipFrameCount(4).Logger())
